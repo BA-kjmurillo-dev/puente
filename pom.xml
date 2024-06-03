@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.6</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>com.puente</groupId>
+	<artifactId>puente</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>puente</name>
+	<description>Puente servicio API Rest</description>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web-services</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc11</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<!-- tag::wsdl[] -->
+			<plugin>
+				<groupId>com.sun.xml.ws</groupId>
+				<artifactId>jaxws-maven-plugin</artifactId>
+				<version>4.0.2</version>
+				<executions>
+					<execution>
+						<id>servicio03</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.service03</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://10.128.248.118/SIREONGFA/awssireon003.aspx?wsdl</wsdlUrl>
+
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+					<execution>
+						<id>servicio04</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.service04</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://10.128.248.118/SIREONGFA/awssireon004.aspx?wsdl</wsdlUrl>
+
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+					<execution>
+						<id>servicio05</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.service05</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://10.128.248.118/SIREONGFA/awssireon005.aspx?wsdl</wsdlUrl>
+
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+					<execution>
+						<id>servicio07</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.service07</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://10.128.248.118/SIREONGFA/awssireon007.aspx?wsdl</wsdlUrl>
+
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+				</executions>
+
+
+			</plugin>
+			<!-- end::wsdl[] -->
+		</plugins>
+	</build>
+
+</project>
