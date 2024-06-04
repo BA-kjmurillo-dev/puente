@@ -1,12 +1,12 @@
-package com.puente.client;
+package com.puente.service;
 
-import com.puente.model.RespService04;
-import com.soap.wsdl.service04.*;
+import com.puente.service.dto.Wsdl04Dto;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 import org.springframework.ws.soap.client.core.SoapActionCallback;
+import com.soap.wsdl.service04.*;
 
-public class ClientService04 extends WebServiceGatewaySupport {
-    public RespService04 response(){
+public class Wsdl04Service extends WebServiceGatewaySupport {
+    public Wsdl04Dto response(){
         //Credenciales
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser("SIREON_TELLER");
@@ -30,7 +30,7 @@ public class ClientService04 extends WebServiceGatewaySupport {
         WSSIREON004ECHOResponse response = (WSSIREON004ECHOResponse) getWebServiceTemplate().marshalSendAndReceive("http://10.128.248.118/SIREONGFA/awssireon004.aspx?wsdl", echo, new SoapActionCallback(
                 "http://10.128.248.118/SIREONGFA/awssireon004.aspx?wsdl"));
 
-        RespService04 service04 = new RespService04();
+        Wsdl04Dto service04 = new Wsdl04Dto();
         String code = response.getServicesresponse004().getServicesResponse().getMessageCode();
         String message = response.getServicesresponse004().getServicesResponse().getMessage();
         service04.setMessageCode(code);

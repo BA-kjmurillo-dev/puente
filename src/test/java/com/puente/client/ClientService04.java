@@ -1,12 +1,9 @@
 package com.puente.client;
 
-import com.puente.model.RespService04;
-import com.soap.wsdl.service04.*;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
-import org.springframework.ws.soap.client.core.SoapActionCallback;
 
 public class ClientService04 extends WebServiceGatewaySupport {
-//    public RespService04 respService04(){
+//    public Wsdl04Dto respService04(){
 //        //Credenciales
 //        ServicesCredentials credentials = new ServicesCredentials();
 //        credentials.setServicesUser("SIREON_TELLER");
@@ -33,7 +30,7 @@ public class ClientService04 extends WebServiceGatewaySupport {
 //        String code = response.getServicesresponse004().getServicesResponse().getMessageCode();
 //        String message = response.getServicesresponse004().getServicesResponse().getMessage();
 //
-//        RespService04 respService04 = new RespService04();
+//        Wsdl04Dto respService04 = new Wsdl04Dto();
 //        respService04.setMessageCode(code);
 //        respService04.setMessage(message);
 //

@@ -1,4 +1,4 @@
-package com.puente.model;
+package com.puente.service.dto;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RespService04 {
+public class Wsdl04Dto {
     private String messageCode;
     private String message;
 }
