@@ -25,10 +25,12 @@ public class MyProperties {
     private String TipoFormaPago;
     @Value("${MotivoRemesa}")
     private String MotivoRemesa;
-    @Value("${Awssireon004}")
-    private String Awssireon004;
     @Value("${Awssireon003}")
     private String Awssireon003;
+    @Value("${Awssireon004}")
+    private String Awssireon004;
+    @Value("${Awssireon007}")
+    private String Awssireon007;
     @Value("${CodigoRemesadora}")
     private String CodigoRemesadora;
 }
