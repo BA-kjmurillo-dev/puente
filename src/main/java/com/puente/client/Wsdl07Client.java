@@ -15,7 +15,7 @@ public class Wsdl07Client extends WebServiceGatewaySupport {
 
     public WSSIREON007CONSULTAPORIDENTIFICADORResponse getRemittanceByIdentifier(ServicesRequest007ItemSolicitud itemSolicitudRequest) {
         //Credentials
-        com.soap.wsdl.service07.ServicesCredentials credentials  = new ServicesCredentials();
+        ServicesCredentials credentials  = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
         credentials.setServicesPassword(myProperties.getServicesPassword());
         credentials.setServicesToken("");

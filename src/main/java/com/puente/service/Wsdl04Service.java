@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class Wsdl04Service {
-    private Wsdl04Client wsdl04Client;
+    private final Wsdl04Client wsdl04Client;
 
     @Autowired
     public Wsdl04Service(Wsdl04Client wsdl04Client) {

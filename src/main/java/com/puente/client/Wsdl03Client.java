@@ -15,7 +15,7 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
 
     public WSSIREON003SERVICIOVENTANILLAResponse getMessage (){
         //Credentials
-        com.soap.wsdl.service03.ServicesCredentials credentials = new ServicesCredentials();
+        ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
         credentials.setServicesPassword(myProperties.getServicesPassword());
         credentials.setServicesToken("");
