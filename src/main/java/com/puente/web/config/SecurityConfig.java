@@ -39,7 +39,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests((authz)->authz
                                 .requestMatchers("/api/auth/**").permitAll()
-                                //.requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/valores/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "CUSTOMER")
                                 .requestMatchers(HttpMethod.GET, "/log").hasRole("ADMIN")
                                 //.requestMatchers(HttpMethod.PUT).denyAll()

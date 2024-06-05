@@ -30,6 +30,7 @@ public class Wsdl04Service extends WebServiceGatewaySupport {
         WSSIREON004ECHOResponse response = (WSSIREON004ECHOResponse) getWebServiceTemplate().marshalSendAndReceive("http://10.128.248.118/SIREONGFA/awssireon004.aspx?wsdl", echo, new SoapActionCallback(
                 "http://10.128.248.118/SIREONGFA/awssireon004.aspx?wsdl"));
 
+
         Wsdl04Dto service04 = new Wsdl04Dto();
         String code = response.getServicesresponse004().getServicesResponse().getMessageCode();
         String message = response.getServicesresponse004().getServicesResponse().getMessage();
