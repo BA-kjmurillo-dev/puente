@@ -15,7 +15,7 @@ public class Wsdl04Client extends WebServiceGatewaySupport {
 
     public WSSIREON004ECHOResponse getMessage (){
         //Credentials
-        com.soap.wsdl.service04.ServicesCredentials credentials = new ServicesCredentials();
+        ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
         credentials.setServicesPassword(myProperties.getServicesPassword());
         credentials.setServicesToken("");

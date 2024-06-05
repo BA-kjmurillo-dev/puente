@@ -5,6 +5,7 @@ import com.puente.service.Wsdl04Service;
 import com.puente.service.Wsdl07Service;
 import com.puente.service.ConsultaServices;
 import com.puente.service.dto.Wsdl04Dto;
+import com.puente.service.dto.Wsdl07Dto;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import com.soap.wsdl.service07.ServicesResponse007;
 import lombok.ToString;
@@ -18,10 +19,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/consulta")
 public class ConsultaController {
-    private ConsultaServices consultaServices;
-    private Wsdl03Service wsdl03Service;
-    private Wsdl04Service wsdl04Service;
-    private Wsdl07Service wsdl07Service;
+    private final ConsultaServices consultaServices;
+    private final Wsdl03Service wsdl03Service;
+    private final Wsdl04Service wsdl04Service;
+    private final Wsdl07Service wsdl07Service;
 
     @Autowired
     public ConsultaController(
@@ -57,7 +58,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/wsdl07Test")
-    public ResponseEntity<ServicesResponse007> wsdl07Test(
+    public ResponseEntity<Wsdl07Dto> wsdl07Test(
         @RequestBody ServicesRequest007ItemSolicitud itemSolicitudRequest
     ) {
         return ResponseEntity.ok(this.wsdl07Service.getRemittanceByIdentifier(itemSolicitudRequest));
