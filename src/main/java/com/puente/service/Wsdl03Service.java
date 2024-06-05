@@ -1,65 +1,23 @@
 package com.puente.service;
 
-import com.puente.web.config.MyProperties;
 import com.soap.wsdl.service03.*;
-import lombok.ToString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.puente.client.Wsdl03Client;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
-import org.springframework.ws.soap.client.core.SoapActionCallback;
+import org.springframework.stereotype.Service;
 
-@ToString
-public class Wsdl03Service extends WebServiceGatewaySupport {
+@Service
+public class Wsdl03Service {
+    private final Wsdl03Client wsdl03Client;
+
     @Autowired
-    private MyProperties myProperties;
-    private static final Logger log = LoggerFactory.getLogger(Wsdl03Service.class);
-
-    public String getMessage (){
-        //ServicesCredentials
-        ServicesCredentials credentials = new ServicesCredentials();
-        credentials.setServicesUser(myProperties.getServicesUser());
-        credentials.setServicesPassword(myProperties.getServicesPassword());
-        credentials.setServicesToken("");
-
-        //SDTServicioVentanillaIn
-        SDTServicioVentanillaIn SDTServicioVentanillaIn = new SDTServicioVentanillaIn();
-        SDTServicioVentanillaIn.setOperacion("Consulta");
-        SDTServicioVentanillaIn.setCanal("0002");
-        SDTServicioVentanillaIn.setDescriptorCanal("JTELLER");
-        SDTServicioVentanillaIn.setAgenciaPago("0101");
-        SDTServicioVentanillaIn.setDescriptorSucursalPago("SUCURSAL");
-        SDTServicioVentanillaIn.setCajero("ATL035");
-
-
-        //SDTServicioVentanillaInItemRemesa
-        SDTServicioVentanillaInItemRemesa SDTServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
-        SDTServicioVentanillaInItemRemesa.setCodigoBanco("2000");
-        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(myProperties.getIdentificadorRemesa());
-        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(myProperties.getTipoFormaPago());
-        SDTServicioVentanillaInItemRemesa.setMotivoRemesa(myProperties.getMotivoRemesa());
-        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(myProperties.getCodigoRemesadora());
-
-        SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
-
-        //Servicesrequest003
-        ServicesRequest003 servicesrequest003 = new ServicesRequest003();
-        servicesrequest003.setServicesCredentials(credentials);
-        servicesrequest003.setVentanilla(SDTServicioVentanillaIn);
-
-        WSSIREON003SERVICIOVENTANILLA WSSIREON003 = new WSSIREON003SERVICIOVENTANILLA();
-        WSSIREON003.setServicesrequest003(servicesrequest003);
-
-        String url = myProperties.getAwssireon003();
-        log.info(url);
-        System.out.println(servicesrequest003);
-        WSSIREON003SERVICIOVENTANILLAResponse response =
-                (WSSIREON003SERVICIOVENTANILLAResponse) getWebServiceTemplate().marshalSendAndReceive(url,
-                        WSSIREON003, new SoapActionCallback(url));
-        String code = response.getServicesresponse003().getVentanilla().getServicesResponse().getMessageCode();
-        String message = response.getServicesresponse003().getVentanilla().getServicesResponse().getMessage();
-
-        return code +" "+message;
+    public Wsdl03Service(Wsdl03Client wsdl03Client) {
+        this.wsdl03Client = wsdl03Client;
     }
 
+    public String getMessage (){
+        WSSIREON003SERVICIOVENTANILLAResponse response = this.wsdl03Client.getMessage();
+        String code = response.getServicesresponse003().getVentanilla().getServicesResponse().getMessageCode();
+        String message = response.getServicesresponse003().getVentanilla().getServicesResponse().getMessage();
+        return code +" "+message;
+    }
 }
