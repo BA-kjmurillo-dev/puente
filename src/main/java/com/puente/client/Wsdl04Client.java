@@ -13,7 +13,7 @@ public class Wsdl04Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl04Client.class);
 
-    public WSSIREON004ECHOResponse getMessage (){
+    public WSSIREON004ECHOResponse getMessage(String canal) {
         //Credentials
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
@@ -22,7 +22,7 @@ public class Wsdl04Client extends WebServiceGatewaySupport {
 
         //Item echo
         ServicesRequest004ItemEcho itemEcho = new ServicesRequest004ItemEcho();
-        itemEcho.setCanal("0002");
+        itemEcho.setCanal(canal);
         itemEcho.setTexto("Echoooo");
 
         //Request

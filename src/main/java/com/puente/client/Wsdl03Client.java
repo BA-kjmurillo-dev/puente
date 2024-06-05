@@ -13,7 +13,7 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl03Client.class);
 
-    public WSSIREON003SERVICIOVENTANILLAResponse getMessage (){
+    public WSSIREON003SERVICIOVENTANILLAResponse getMessage() {
         //Credentials
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
@@ -34,7 +34,6 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
         SDTServicioVentanillaInItemRemesa.setCodigoBanco("2000");
         SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(myProperties.getIdentificadorRemesa());
         SDTServicioVentanillaInItemRemesa.setTipoFormaPago(myProperties.getTipoFormaPago());
-        SDTServicioVentanillaInItemRemesa.setMotivoRemesa(myProperties.getMotivoRemesa());
         SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(myProperties.getCodigoRemesadora());
 
         SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
