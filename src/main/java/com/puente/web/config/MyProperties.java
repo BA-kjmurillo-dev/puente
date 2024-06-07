@@ -29,6 +29,8 @@ public class MyProperties {
     private String Awssireon003;
     @Value("${Awssireon004}")
     private String Awssireon004;
+    @Value("${Awssireon005}")
+    private String Awssireon005;
     @Value("${Awssireon007}")
     private String Awssireon007;
     @Value("${CodigoRemesadora}")
