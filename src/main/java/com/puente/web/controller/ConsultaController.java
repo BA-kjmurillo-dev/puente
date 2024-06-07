@@ -1,11 +1,10 @@
 package com.puente.web.controller;
 
-import com.puente.service.Wsdl03Service;
-import com.puente.service.Wsdl04Service;
-import com.puente.service.Wsdl07Service;
-import com.puente.service.ConsultaServices;
+import com.puente.service.*;
 import com.puente.service.dto.Wsdl04Dto;
+import com.puente.service.dto.Wsdl05Dto;
 import com.puente.service.dto.Wsdl07Dto;
+import com.soap.wsdl.service05.ServicesRequest005ItemSolicitud;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import com.soap.wsdl.service07.ServicesResponse007;
 import lombok.ToString;
@@ -22,6 +21,7 @@ public class ConsultaController {
     private final ConsultaServices consultaServices;
     private final Wsdl03Service wsdl03Service;
     private final Wsdl04Service wsdl04Service;
+    private final Wsdl05Service wsdl05Service;
     private final Wsdl07Service wsdl07Service;
 
     @Autowired
@@ -29,11 +29,13 @@ public class ConsultaController {
         ConsultaServices consultaServices,
         Wsdl03Service wsdl03Service,
         Wsdl04Service wsdl04Service,
+        Wsdl05Service wsdl05Service,
         Wsdl07Service wsdl07Service
     ) {
         this.consultaServices = consultaServices;
         this.wsdl03Service = wsdl03Service;
         this.wsdl04Service = wsdl04Service;
+        this.wsdl05Service = wsdl05Service;
         this.wsdl07Service = wsdl07Service;
     }
 
@@ -57,6 +59,13 @@ public class ConsultaController {
         return ResponseEntity.ok(this.wsdl04Service.getMessage());
     }
 
+    @PostMapping("/wsdl05Test")
+    public ResponseEntity<Wsdl05Dto> wsdl05Test(
+            @RequestBody
+            ServicesRequest005ItemSolicitud request005ItemSolicitud
+    ){
+        return ResponseEntity.ok(this.wsdl05Service.getListRemittances(request005ItemSolicitud));
+    }
     @GetMapping("/wsdl07Test")
     public ResponseEntity<Wsdl07Dto> wsdl07Test(
         @RequestBody ServicesRequest007ItemSolicitud itemSolicitudRequest
