@@ -2,8 +2,8 @@ package com.puente.service;
 
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 public class ConsultaServices {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsultaServices.class);
+    //private static final Logger log = LoggerFactory.getLogger(ConsultaServices.class);
     @Autowired
     private ConsultaRemesadoraService consultaRemesadoraService ;
 
     public String ConsultaRemesadora(String remesa){
-        log.info("Constoller remesa:"+remesa);
+        //log.info("Constoller remesa:"+remesa);
         return this.consultaRemesadoraService.ConsultaRemesadora(remesa);
     }
 
