@@ -42,6 +42,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/valores/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "CUSTOMER")
                                 .requestMatchers(HttpMethod.GET, "/log").hasRole("ADMIN")
+                                .requestMatchers("/consulta/wsdl05Test").permitAll()
+                               // .requestMatchers(HttpMethod.GET, "/consulta/wsdl05Test").hasRole("ADMIN")
                                 //.requestMatchers(HttpMethod.PUT).denyAll()
                                 //.requestMatchers("/log").hasAuthority("permise_special")
                                 //.requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
