@@ -13,7 +13,9 @@ public class Wsdl04Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl04Client.class);
 
-    public WSSIREON004ECHOResponse getMessage(String canal) {
+    public WSSIREON004ECHOResponse testSireonConection(
+        String canal
+    ) {
         //Credentials
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());

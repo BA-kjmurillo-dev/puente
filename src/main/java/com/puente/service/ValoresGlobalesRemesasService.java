@@ -17,15 +17,19 @@ public class ValoresGlobalesRemesasService {
         this.remesasRepository = remesasRepository;
     }
 
-    public List<ValoresGlobalesRemesasEntity> getAll(){
+    public List<ValoresGlobalesRemesasEntity> getAll() {
         return this.remesasRepository.findAll();
     }
 
-    public ValoresGlobalesRemesasEntity get(String codigo){
+    public ValoresGlobalesRemesasEntity get(String codigo) {
         return this.remesasRepository.findById(codigo).orElse(null);
     }
 
-    public ValoresGlobalesRemesasEntity save(ValoresGlobalesRemesasEntity valoresGlobalesRemesasEntity){
+    public ValoresGlobalesRemesasEntity findByCodeAndItem(String code, String item) {
+        return this.remesasRepository.findByCodigoAndItem(code, item);
+    }
+
+    public ValoresGlobalesRemesasEntity save(ValoresGlobalesRemesasEntity valoresGlobalesRemesasEntity) {
         return this.remesasRepository.save(valoresGlobalesRemesasEntity);
     }
 }

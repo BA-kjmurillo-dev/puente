@@ -13,7 +13,9 @@ public class Wsdl07Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl07Client.class);
 
-    public WSSIREON007CONSULTAPORIDENTIFICADORResponse getRemittanceByIdentifier(ServicesRequest007ItemSolicitud itemSolicitudRequest) {
+    public WSSIREON007CONSULTAPORIDENTIFICADORResponse getRemittanceByIdentifier(
+        ServicesRequest007ItemSolicitud itemSolicitudRequest
+    ) {
         //Credentials
         ServicesCredentials credentials  = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());

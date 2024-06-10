@@ -14,8 +14,8 @@ public class Wsdl04Service {
     public Wsdl04Service(Wsdl04Client wsdl04Client) {
         this.wsdl04Client = wsdl04Client;
     }
-    public Wsdl04Dto getMessage(String canal) {
-        WSSIREON004ECHOResponse wsdl04Response = this.wsdl04Client.getMessage(canal);
+    public Wsdl04Dto testSireonConection(String canal) {
+        WSSIREON004ECHOResponse wsdl04Response = this.wsdl04Client.testSireonConection(canal);
         ServicesResponse servicesResponse = wsdl04Response.getServicesresponse004().getServicesResponse();
         Wsdl04Dto response = new Wsdl04Dto();
         response.setMessage(servicesResponse.getMessage());

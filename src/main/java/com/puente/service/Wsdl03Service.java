@@ -1,5 +1,6 @@
 package com.puente.service;
 
+import com.puente.service.dto.RequestGetRemittanceDataDto;
 import com.soap.wsdl.service03.*;
 import com.puente.client.Wsdl03Client;
 import com.puente.service.dto.Wsdl03Dto;
@@ -15,8 +16,8 @@ public class Wsdl03Service {
         this.wsdl03Client = wsdl03Client;
     }
 
-    public Wsdl03Dto getMessage (){
-        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.getMessage();
+    public Wsdl03Dto getRemittanceData (RequestGetRemittanceDataDto request03) {
+        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.getRemittanceData(request03);
         ServicesResponse servicesResponse = wsdl03Response.getServicesresponse003().getVentanilla().getServicesResponse();
         SDTServicioVentanillaOutItemRemesa itemRemesa = wsdl03Response.getServicesresponse003().getVentanilla().getItemRemesa();
         Wsdl03Dto response = new Wsdl03Dto();

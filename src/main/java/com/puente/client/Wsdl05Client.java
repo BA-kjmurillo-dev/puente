@@ -14,7 +14,9 @@ public class Wsdl05Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl05Client.class);
 
-    public WSSIREON005LISTADOREMESADORESCANALResponse getListRemittances(ServicesRequest005ItemSolicitud request005ItemSolicitud){
+    public WSSIREON005LISTADOREMESADORESCANALResponse getRemittersListByChannel(
+        String canal
+    ) {
         //Credentials
         com.soap.wsdl.service05.ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
@@ -23,7 +25,7 @@ public class Wsdl05Client extends WebServiceGatewaySupport {
 
         // Item Solicitud
         ServicesRequest005ItemSolicitud itemSolicitud = new ServicesRequest005ItemSolicitud();
-        itemSolicitud.setCanal("0002");
+        itemSolicitud.setCanal(canal);
 
         // Request
         ServicesRequest005 request005 = new ServicesRequest005();
@@ -40,9 +42,9 @@ public class Wsdl05Client extends WebServiceGatewaySupport {
 
         //Response
         WSSIREON005LISTADOREMESADORESCANALResponse response = (WSSIREON005LISTADOREMESADORESCANALResponse) getWebServiceTemplate().marshalSendAndReceive(
-                url,
-                listadoremesadorescanal,
-                callback
+            url,
+            listadoremesadorescanal,
+            callback
         );
 
         return response;
