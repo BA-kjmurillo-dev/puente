@@ -2,23 +2,21 @@ package com.puente.service;
 
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @ToString
 @NoArgsConstructor
 public class ConsultaRemesadoraService {
-    private static final Logger log = LoggerFactory.getLogger(ConsultaRemesadoraService.class);
+    //private static final Logger log = LoggerFactory.getLogger(ConsultaRemesadoraService.class);
     public String ConsultaRemesadora(String remesa){
-        log.info("Consulta services:"+remesa);
         int cantidad = 0;
         int numerico = 0;
         String rem = "";
 
         if (remesa == null){
-            log.error("Remesa no puede ser null");
             throw new IllegalArgumentException("Remesa no puede ser null");
         }
         else {
@@ -33,13 +31,12 @@ public class ConsultaRemesadoraService {
                         if (rem.isEmpty()) {
                             rem = busBTS(cantidad, remesa);
                             if (rem.isEmpty()) {
-                              rem = null;
+                              rem = "error";
                             }
                         }
                     }
                 }
             }
-            log.info("Remesadora:"+rem);
         }
         return rem;
     }
