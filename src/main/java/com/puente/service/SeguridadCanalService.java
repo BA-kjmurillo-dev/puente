@@ -1,6 +1,5 @@
 package com.puente.service;
 
-
 import com.puente.persistence.entity.SeguridadCanalEntity;
 import com.puente.persistence.repository.SeguridadCanalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ public class SeguridadCanalService {
     private SeguridadCanalRepository seguridadRepository;
 
     @Autowired
-    public SeguridadCanalService(SeguridadCanalRepository seguridadRepository){
+    public SeguridadCanalService(SeguridadCanalRepository seguridadRepository) {
         this.seguridadRepository = seguridadRepository;
     }
 
@@ -21,8 +20,11 @@ public class SeguridadCanalService {
         return this.seguridadRepository.findAll();
     }
 
-    public SeguridadCanalEntity get(String contrasenia){
+    public SeguridadCanalEntity get(String contrasenia) {
         return this.seguridadRepository.findById(contrasenia).orElse(null);
     }
 
+    public SeguridadCanalEntity findBychannelCode(String channel) {
+        return this.seguridadRepository.findByCodigoCanal(channel);
+    }
 }

@@ -47,4 +47,11 @@ public class Wsdl07Service extends WebServiceGatewaySupport {
         }
         return remittanceByIdentifierResponse;
     }
+
+    public Boolean isValidStatus(
+        String remittanseStatus
+    ) {
+        List<String> validStatuses = List.of("Cargada", "Pendiente", "Reversada");
+        return validStatuses.contains(remittanseStatus);
+    }
 }

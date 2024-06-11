@@ -17,9 +17,11 @@ public class Wsdl05Service {
         this.wsdl05Client = wsdl05Client;
     }
 
-    public Wsdl05Dto getListRemittances(ServicesRequest005ItemSolicitud request005ItemSolicitud) {
+    public Wsdl05Dto getRemittersListByChannel(
+        String canal
+    ) {
         try {
-            WSSIREON005LISTADOREMESADORESCANALResponse servicesresponse = this.wsdl05Client.getListRemittances(request005ItemSolicitud);
+            WSSIREON005LISTADOREMESADORESCANALResponse servicesresponse = this.wsdl05Client.getRemittersListByChannel(canal);
             ServicesResponse005 servicesResponse005 = servicesresponse.getServicesresponse005();
 
             ServicesResponse responseStatus = servicesResponse005.getServicesResponse();
@@ -34,7 +36,7 @@ public class Wsdl05Service {
                 List<ServicesResponse005ItemRemesadora> remittancesList = servicesResponse005.getColeccionRemesadoras().getItemRemesadora();
 
                 if (remittancesList != null && !remittancesList.isEmpty()) {
-                    List<Wsdl05Dto.Awsdl05Data> remittancesDataList = mapRemittancesData(remittancesList);
+                    List<Wsdl05Dto.Awsdl05Data> remittancesDataList = mapRemittersData(remittancesList);
                     remittancesListResponse.setData(remittancesDataList);
                 }
             }
@@ -45,17 +47,21 @@ public class Wsdl05Service {
         }
     }
 
-    private List<Wsdl05Dto.Awsdl05Data> mapRemittancesData(List<ServicesResponse005ItemRemesadora> remittancesList) {
+    private List<Wsdl05Dto.Awsdl05Data> mapRemittersData(
+        List<ServicesResponse005ItemRemesadora> remittancesList
+    ) {
         return remittancesList.stream()
-                .map(this::mapRemittanceData)
-                .collect(Collectors.toList());
+            .map(this::mapRemitterData)
+            .collect(Collectors.toList());
     }
 
-    private Wsdl05Dto.Awsdl05Data mapRemittanceData(ServicesResponse005ItemRemesadora remittance){
+    private Wsdl05Dto.Awsdl05Data mapRemitterData(
+        ServicesResponse005ItemRemesadora remittance
+    ){
         return new Wsdl05Dto.Awsdl05Data(
-                remittance.getCodigoRemesador(),
-                remittance.getDescriptorRemesador(),
-                remittance.getTipoRemesador()
+            remittance.getCodigoRemesador(),
+            remittance.getDescriptorRemesador(),
+            remittance.getTipoRemesador()
         );
     }
 
@@ -66,4 +72,3 @@ public class Wsdl05Service {
     }
 
 }
-

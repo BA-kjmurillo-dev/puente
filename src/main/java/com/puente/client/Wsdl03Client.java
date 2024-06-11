@@ -1,5 +1,6 @@
 package com.puente.client;
 
+import com.puente.service.dto.RequestGetRemittanceDataDto;
 import com.puente.web.config.MyProperties;
 import com.soap.wsdl.service03.*;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl03Client.class);
 
-    public WSSIREON003SERVICIOVENTANILLAResponse getMessage (){
+    public WSSIREON003SERVICIOVENTANILLAResponse getRemittanceData(RequestGetRemittanceDataDto request03) {
         //Credentials
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
@@ -23,19 +24,14 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
         //Ventanilla In
         SDTServicioVentanillaIn SDTServicioVentanillaIn = new SDTServicioVentanillaIn();
         SDTServicioVentanillaIn.setOperacion("Consulta");
-        SDTServicioVentanillaIn.setCanal("0002");
-        SDTServicioVentanillaIn.setDescriptorCanal("JTELLER");
-        SDTServicioVentanillaIn.setAgenciaPago("0101");
-        SDTServicioVentanillaIn.setDescriptorSucursalPago("SUCURSAL");
-        SDTServicioVentanillaIn.setCajero("ATL035");
+        SDTServicioVentanillaIn.setCanal(request03.getCanal());
 
         //Item Remesa
         SDTServicioVentanillaInItemRemesa SDTServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
-        SDTServicioVentanillaInItemRemesa.setCodigoBanco("2000");
-        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(myProperties.getIdentificadorRemesa());
-        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(myProperties.getTipoFormaPago());
-        SDTServicioVentanillaInItemRemesa.setMotivoRemesa(myProperties.getMotivoRemesa());
-        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(myProperties.getCodigoRemesadora());
+        SDTServicioVentanillaInItemRemesa.setCodigoBanco(request03.getCodigoBanco());
+        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(request03.getCodigoRemesadora());
+        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(request03.getIdentificadorRemesa());
+        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(request03.getTipoFormaPago());
 
         SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
 

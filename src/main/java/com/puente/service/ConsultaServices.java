@@ -7,6 +7,9 @@ import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @ToString
 @NoArgsConstructor
@@ -21,4 +24,12 @@ public class ConsultaServices {
         return this.consultaRemesadoraService.ConsultaRemesadora(remesa);
     }
 
+    public String getPaymentType(
+        String paymentMethod
+    ) {
+        Map<String, String> keyValueMap = new HashMap<>();
+        keyValueMap.put("01", "CASH");
+        keyValueMap.put("02", "DEPOSIT_ACCOUNT");
+        return keyValueMap.get(paymentMethod);
+    }
 }
