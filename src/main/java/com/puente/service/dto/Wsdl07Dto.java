@@ -1,13 +1,15 @@
 package com.puente.service.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Getter;
 
-@Setter
 @Getter
-public class Wsdl07Dto {
-    private String code;
-    private String message;
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Wsdl07Dto extends ResponseDto {
     private Awsdl07Data data;
     @Setter
     @Getter

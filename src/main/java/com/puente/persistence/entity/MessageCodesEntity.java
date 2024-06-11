@@ -18,7 +18,7 @@ public class MessageCodesEntity {
     @Column(nullable = false, length = 25)
     private String messageCode;
 
-    @Column(length = 10)
+    @Column(nullable = false, length = 10)
     private String code;
 
     @Column(length = 100)

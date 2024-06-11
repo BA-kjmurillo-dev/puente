@@ -1,5 +1,6 @@
 package com.puente.service;
 
+import com.puente.persistence.entity.SeguridadCanalEntity;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 //import org.slf4j.Logger;
@@ -14,19 +15,20 @@ import java.util.Map;
 @ToString
 @NoArgsConstructor
 public class ConsultaService {
-
-    //private static final Logger log = LoggerFactory.getLogger(ConsultaService.class);
     @Autowired
-    private UtilServices utilServices;
+    private SeguridadCanalService seguridadCanalService;
+    private UtilService utilService;
 
     public String ConsultaRemesadora(String remesa){
         //log.info("Constoller remesa:"+remesa);
-        return this.utilServices.ConsultaRemesadora(remesa);
+        return this.utilService.ConsultaRemesadora(remesa);
     }
 
     public String getPaymentType(
-        String paymentMethod
+            String channel
     ) {
+        SeguridadCanalEntity channelSecurity = this.seguridadCanalService.findBychannelCode(channel);
+        String paymentMethod = channelSecurity.getMetodoPago();
         Map<String, String> keyValueMap = new HashMap<>();
         keyValueMap.put("01", "CASH");
         keyValueMap.put("02", "DEPOSIT_ACCOUNT");

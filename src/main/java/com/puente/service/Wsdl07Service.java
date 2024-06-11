@@ -29,7 +29,7 @@ public class Wsdl07Service extends WebServiceGatewaySupport {
         String message = responseStatus.getMessage();
 
         Wsdl07Dto remittanceByIdentifierResponse = new Wsdl07Dto();
-        remittanceByIdentifierResponse.setCode(messageCode);
+        remittanceByIdentifierResponse.setMessageCode(messageCode);
         remittanceByIdentifierResponse.setMessage(message);
 
         if(messageCode.equals("000000")) {

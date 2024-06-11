@@ -10,14 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.puente.service.*;
-import info.debatty.java.stringsimilarity.JaroWinkler;
 
 @RestController
 @RequestMapping("/test")
 public class TestController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
     private final ConsultaService consultaService;
-    private final UtilServices consultaRemesadoraServices;
+    private final UtilService consultaRemesadoraServices;
     private final Wsdl03Service wsdl03Service;
     private final Wsdl04Service wsdl04Service;
     private final Wsdl05Service wsdl05Service;
@@ -27,7 +26,7 @@ public class TestController {
     @Autowired
     public TestController(
             ConsultaService consultaService,
-            UtilServices consultaRemesadoraServices,
+            UtilService consultaRemesadoraServices,
             Wsdl03Service wsdl03Service,
             Wsdl04Service wsdl04Service,
             Wsdl05Service wsdl05Service,
@@ -121,44 +120,6 @@ public class TestController {
                 return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
             }
 
-        }
-    }
-
-    @PostMapping("/diferenciaj2")
-    public ResponseEntity<String> defirenciaj2(@RequestBody Nombres nombres) {
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-
-            JaroWinkler jw = new JaroWinkler();
-            double similarity = jw.similarity(nombres.nombre1, nombres.nombre2) * 100;
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
-        }
-    }
-
-    @PostMapping("/diferenciaj3")
-    public ResponseEntity<String> defirenciaj3(@RequestBody Nombres nombres) {
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-            double similarity = UtilServices.needlemanWunsch(nombres.nombre1, nombres.nombre2,1,-1,-1);
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
         }
     }
 
