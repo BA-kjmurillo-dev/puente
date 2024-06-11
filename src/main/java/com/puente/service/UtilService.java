@@ -1,5 +1,7 @@
 package com.puente.service;
 
+import com.puente.persistence.entity.MessageCodesEntity;
+import com.puente.service.dto.ResponseDto;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import java.util.HashSet;
@@ -8,12 +10,29 @@ import java.util.Set;
 //import org.slf4j.LoggerFactory;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @ToString
 @NoArgsConstructor
-public class UtilServices {
+public class UtilService {
+    @Autowired
+    private MessageCodesService messageCodesService;
+
+    public Boolean isResponseSuccess(ResponseDto servicesResponse) {
+        return servicesResponse.getMessageCode().equals("000000");
+    }
+
+    public ResponseDto getErrorMessageCode(ResponseDto servicesResponse) {
+        MessageCodesEntity errorMessage = messageCodesService.get(servicesResponse.getMessageCode());
+        ResponseDto formattedResponse = new ResponseDto();
+        formattedResponse.setMessage(errorMessage.getMessage());
+        formattedResponse.setMessageCode(errorMessage.getCode());
+        return formattedResponse;
+    }
+
     //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
     public String ConsultaRemesadora(String remesa){
         int cantidad = 0;

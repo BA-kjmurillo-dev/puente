@@ -1,18 +1,19 @@
 package com.puente.service.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
-public class Wsdl05Dto {
-    private String messageCode;
-    private String message;
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Wsdl05Dto extends ResponseDto {
     private List<Awsdl05Data> data;
 
-    @Data
-    public static class Awsdl05Data {
+    @Setter
+    @Getter
+    public static class Awsdl05Data  {
         private String codigoRemesador;
         private String descriptorRemesador;
         private String tipoRemesador;

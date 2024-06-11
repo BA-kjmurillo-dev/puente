@@ -10,8 +10,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Wsdl03Dto {
-    private String messageCode;
-    private String message;
+public class Wsdl03Dto extends ResponseDto {
     private SDTServicioVentanillaOutItemRemesa data;
 }
