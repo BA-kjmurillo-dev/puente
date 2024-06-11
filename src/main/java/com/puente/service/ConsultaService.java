@@ -13,15 +13,15 @@ import java.util.Map;
 @Service
 @ToString
 @NoArgsConstructor
-public class ConsultaServices {
+public class ConsultaService {
 
-    //private static final Logger log = LoggerFactory.getLogger(ConsultaServices.class);
+    //private static final Logger log = LoggerFactory.getLogger(ConsultaService.class);
     @Autowired
-    private ConsultaRemesadoraService consultaRemesadoraService ;
+    private UtilServices utilServices;
 
     public String ConsultaRemesadora(String remesa){
         //log.info("Constoller remesa:"+remesa);
-        return this.consultaRemesadoraService.ConsultaRemesadora(remesa);
+        return this.utilServices.ConsultaRemesadora(remesa);
     }
 
     public String getPaymentType(

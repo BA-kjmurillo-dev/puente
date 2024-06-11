@@ -5,7 +5,7 @@ import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.service.*;
 import com.puente.service.dto.*;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
-import com.puente.service.ConsultaRemesadoraService;
+import com.puente.service.UtilServices;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,21 +23,21 @@ public class ConsultaController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
     private ValoresGlobalesRemesasService valoresGlobalesService;
     private SeguridadCanalService seguridadCanalService;
-    private final ConsultaServices consultaServices;
-    private final ConsultaRemesadoraService consultaRemesadoraServices;
+    private final ConsultaService consultaService;
+    private final UtilServices consultaRemesadoraServices;
     private final Wsdl03Service wsdl03Service;
     private final Wsdl04Service wsdl04Service;
     private final Wsdl05Service wsdl05Service;
     private final Wsdl07Service wsdl07Service;
     @Autowired
-     private ConsultaRemesadoraService consultaRemesadoraService;
+     private UtilServices utilServices;
 
     @Autowired
     public ConsultaController(
         ValoresGlobalesRemesasService valoresGlobalesService,
         SeguridadCanalService seguridadCanalService,
-        ConsultaServices consultaServices,
-        ConsultaRemesadoraService consultaRemesadoraServices,
+        ConsultaService consultaService,
+        UtilServices consultaRemesadoraServices,
         Wsdl03Service wsdl03Service,
         Wsdl04Service wsdl04Service,
         Wsdl05Service wsdl05Service,
@@ -45,7 +45,7 @@ public class ConsultaController {
     ) {
         this.valoresGlobalesService = valoresGlobalesService;
         this.seguridadCanalService = seguridadCanalService;
-        this.consultaServices = consultaServices;
+        this.consultaService = consultaService;
         this.consultaRemesadoraServices = consultaRemesadoraServices;
         this.wsdl03Service = wsdl03Service;
         this.wsdl04Service = wsdl04Service;
@@ -111,7 +111,7 @@ public class ConsultaController {
 
         SeguridadCanalEntity canal = seguridadCanalService.findBychannelCode(itemSolicitudRequest.getCanal());
         String paymentMethod = canal.getMetodoPago();
-        request03.setTipoFormaPago(consultaServices.getPaymentType(paymentMethod));
+        request03.setTipoFormaPago(consultaService.getPaymentType(paymentMethod));
 
         Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
 
@@ -121,4 +121,6 @@ public class ConsultaController {
 
         return ResponseEntity.ok(wsdl03Response);
     }
+
+
 }

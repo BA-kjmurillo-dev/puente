@@ -2,15 +2,19 @@ package com.puente.service;
 
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import java.util.HashSet;
+import java.util.Set;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 @Service
 @ToString
 @NoArgsConstructor
-public class ConsultaRemesadoraService {
-    //private static final Logger log = LoggerFactory.getLogger(ConsultaRemesadoraService.class);
+public class UtilServices {
+    //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
     public String ConsultaRemesadora(String remesa){
         int cantidad = 0;
         int numerico = 0;
@@ -170,4 +174,66 @@ public class ConsultaRemesadoraService {
 
         return remCod.length() == 10 || "000016".equals(mrEcod);
     }
+
+    public static String normalize(String name) {
+        String normalized = Normalizer.normalize(name, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(normalized).replaceAll("").toLowerCase().replaceAll("\\s+", " ").trim();
+    }
+
+    public double calculateJaccardSimilarity(String s1, String s2, int n) {
+        Set<String> nGrams1 = generateNGrams(s1, n);
+        Set<String> nGrams2 = generateNGrams(s2, n);
+
+        Set<String> intersection = new HashSet<>(nGrams1);
+        intersection.retainAll(nGrams2);
+
+        Set<String> union = new HashSet<>(nGrams1);
+        union.addAll(nGrams2);
+
+        return (double) intersection.size() / union.size();
+    }
+
+    private Set<String> generateNGrams(String s, int n) {
+        Set<String> nGrams = new HashSet<>();
+        for (int i = 0; i <= s.length() - n; i++) {
+            nGrams.add(s.substring(i, i + n));
+        }
+        return nGrams;
+    }
+
+    public static int needlemanWunsch(String s1, String s2, int match, int mismatch, int gap) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+
+        for (int i = 0; i <= s1.length(); i++) {
+            dp[i][0] = i * gap;
+        }
+
+        for (int j = 0; j <= s2.length(); j++) {
+            dp[0][j] = j * gap;
+        }
+
+        for (int i = 1; i <= s1.length(); i++) {
+            for (int j = 1; j <= s2.length(); j++) {
+                int matchScore = dp[i - 1][j - 1] + (s1.charAt(i - 1) == s2.charAt(j - 1) ? match : mismatch);
+                int delete = dp[i - 1][j] + gap;
+                int insert = dp[i][j - 1] + gap;
+                dp[i][j] = Math.max(matchScore, Math.max(delete, insert));
+            }
+        }
+
+        return dp[s1.length()][s2.length()];
+    }
+
+    public static void main(String[] args) {
+        String s1 = "GATTACA";
+        String s2 = "GCATGCU";
+        int match = 1;
+        int mismatch = -1;
+        int gap = -1;
+
+        int score = needlemanWunsch(s1, s2, match, mismatch, gap);
+        System.out.println("La puntuación de alineación óptima es: " + score);
+    }
+
 }
