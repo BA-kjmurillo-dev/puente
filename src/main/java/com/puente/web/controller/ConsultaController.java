@@ -1,5 +1,6 @@
 package com.puente.web.controller;
 
+import com.puente.persistence.entity.SeguridadCanalEntity;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.service.*;
 import com.puente.service.dto.*;
@@ -51,21 +52,28 @@ public class ConsultaController {
 
     @GetMapping("/validateRemittance")
     public ResponseEntity<Object> validateRemittance(
-        @RequestBody ServicesRequest007ItemSolicitud itemSolicitudRequest
+        @RequestBody RequestGetRemittanceDataDto requestData
     ) {
+        // get channel information
+        SeguridadCanalEntity channelInfo = this.seguridadCanalService.findBychannelCode(requestData.getCanal());
+        if(channelInfo == null) {
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setMessageCode("CUSTOM01"); // channel is not parameterized
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
+            return ResponseEntity.ok(formattedResponse);
+        }
+
         // Validate Sireon Active Wsdl04
-        Wsdl04Dto wsdl04Response = this.wsdl04Service.testSireonConection(itemSolicitudRequest.getCanal());
-        Boolean isSireonActive = this.wsdl04Service.isSireonActive(wsdl04Response);
-        log.info("isSireonActive:"+ isSireonActive);
+        Wsdl04Dto wsdl04Response = this.wsdl04Service.testSireonConection(channelInfo.getCodigoCanalSireon());
         if(!this.utilService.isResponseSuccess(wsdl04Response)) {
-            ResponseDto formattedResponse = this.utilService.getErrorMessageCode(wsdl04Response);
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl04Response);
             return ResponseEntity.ok(formattedResponse);
         }
 
         // get Remitters by channel Wsdl05
-        Wsdl05Dto wsdl05Response = this.wsdl05Service.getRemittersListByChannel(itemSolicitudRequest.getCanal());
+        Wsdl05Dto wsdl05Response = this.wsdl05Service.getRemittersListByChannel(channelInfo.getCodigoCanalSireon());
         if(!this.utilService.isResponseSuccess(wsdl05Response)) {
-            ResponseDto formattedResponse = this.utilService.getErrorMessageCode(wsdl05Response);
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl05Response);
             return ResponseEntity.ok(formattedResponse);
         }
         List<Wsdl05Dto.Awsdl05Data> remittersList = wsdl05Response.getData();
@@ -73,45 +81,56 @@ public class ConsultaController {
 
         // Validate Remittance Sireon Wsdl07
         ValoresGlobalesRemesasEntity bank = valoresGlobalesService.findByCodeAndItem( "01", "bank");
-        itemSolicitudRequest.setCodigoBanco(bank.getValor());
-        Wsdl07Dto wsdl07Response = this.wsdl07Service.getRemittanceByIdentifier(itemSolicitudRequest);
+        ServicesRequest007ItemSolicitud request07 = new ServicesRequest007ItemSolicitud();
+        request07.setCanal(channelInfo.getCodigoCanalSireon());
+        request07.setCodigoBanco(bank.getValor());
+        request07.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
+        Wsdl07Dto wsdl07Response = this.wsdl07Service.getRemittanceByIdentifier(request07);
         if(wsdl07Response.getData() != null) {
             String remittanseStatus = wsdl07Response.getData().getEstadoRemesa();
             Boolean isValidStatus = this.wsdl07Service.isValidStatus(remittanseStatus);
             if(isValidStatus) {
                 remitterCode = wsdl07Response.getData().getCodigoRemesadora();
             } else {
-                remitterCode = null;
-                // Retornar mensaje de status error Sireon
+                ResponseDto responseDto = new ResponseDto();
+                responseDto.setMessageCode("CUSTOM03"); // status remitance not valid
+                ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
+                return ResponseEntity.ok(formattedResponse);
             }
         } else {
+            // TO DO: devolver un objto con una bandera y la remesadora y modificar el if "error"
             // Validate Remittance Algorithm
-            remitterCode = this.utilService.ConsultaRemesadora(itemSolicitudRequest.getIdentificadorRemesa());
-            log.info("Remittance Algorithm:" + remitterCode);
+            remitterCode = this.utilService.ConsultaRemesadora(requestData.getIdentificadorRemesa());
         }
 
         if(remitterCode == "error") {
-            return ResponseEntity.ok("No se encontro información de la remesa.");
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setMessageCode("SIREMU"); // Pay for Siremu
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
+            return ResponseEntity.ok(formattedResponse);
         }
 
         boolean isChannelValid = remittersList.stream().anyMatch(remitter -> remitter.getCodigoRemesador().equals(remitterCode));
 
         if(!isChannelValid) {
-            return ResponseEntity.ok("Este canal no puede procesar esta remesa.");
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setMessageCode("CUSTOM02"); // This remitter cannot pay for this channel.
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
+            return ResponseEntity.ok(formattedResponse);
         }
 
         // get Remittance Data Wsdl03
         RequestGetRemittanceDataDto request03 = new RequestGetRemittanceDataDto();
-        request03.setCanal(itemSolicitudRequest.getCanal());
-        request03.setIdentificadorRemesa(itemSolicitudRequest.getIdentificadorRemesa());
+        request03.setCanal(channelInfo.getCodigoCanalSireon());
+        request03.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
         request03.setCodigoBanco(bank.getValor());
         request03.setCodigoRemesadora(remitterCode);
-        request03.setTipoFormaPago(consultaService.getPaymentType(itemSolicitudRequest.getCanal()));
+        request03.setTipoFormaPago(consultaService.getPaymentType(channelInfo.getMetodoPago()));
 
         Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
 
         if(!this.utilService.isResponseSuccess(wsdl03Response)) {
-            ResponseDto formattedResponse = this.utilService.getErrorMessageCode(wsdl03Response);
+            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl03Response);
             return ResponseEntity.ok(formattedResponse);
         }
 
