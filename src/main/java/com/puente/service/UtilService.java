@@ -38,6 +38,13 @@ public class UtilService {
         return formattedResponse;
     }
 
+    public ResponseDto getExceptionMessageCode(Exception e) {
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setMessageCode("03");
+        responseDto.setMessage(e.getMessage());
+        return this.getFormattedMessageCode(responseDto);
+    }
+
     //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
     public String ConsultaRemesadora(String remesa){
         int cantidad = 0;
