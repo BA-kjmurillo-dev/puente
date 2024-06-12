@@ -25,12 +25,24 @@ public class UtilService {
         return servicesResponse.getMessageCode().equals("000000");
     }
 
-    public ResponseDto getErrorMessageCode(ResponseDto servicesResponse) {
-        MessageCodesEntity errorMessage = messageCodesService.get(servicesResponse.getMessageCode());
+    public ResponseDto getFormattedMessageCode(ResponseDto servicesResponse) {
+        MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getMessageCode());
         ResponseDto formattedResponse = new ResponseDto();
-        formattedResponse.setMessage(errorMessage.getMessage());
-        formattedResponse.setMessageCode(errorMessage.getCode());
+        if(messageCode == null) {
+            formattedResponse.setMessage(servicesResponse.getMessage());
+            formattedResponse.setMessageCode(servicesResponse.getMessageCode());
+        } else {
+            formattedResponse.setMessage(messageCode.getMessage());
+            formattedResponse.setMessageCode(messageCode.getCode());
+        }
         return formattedResponse;
+    }
+
+    public ResponseDto getExceptionMessageCode(Exception e) {
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setMessageCode("03");
+        responseDto.setMessage(e.getMessage());
+        return this.getFormattedMessageCode(responseDto);
     }
 
     //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);

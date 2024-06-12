@@ -15,5 +15,5 @@ public class RequestGetRemittanceDataDto {
     private String codigoBanco;
     private String codigoRemesadora;
     private String identificadorRemesa;
-    private String TipoFormaPago;
+    private String tipoFormaPago;
 }
