@@ -16,6 +16,7 @@ import com.puente.service.dto.comparacionNombreDto;
 @RequestMapping("/test")
 public class TestController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
+    private final ConsultaController consultaController;
     private final UtilService utilService;
     private final ConsultaService consultaService;
     private final Wsdl03Service wsdl03Service;
@@ -26,15 +27,17 @@ public class TestController {
 
     @Autowired
     public TestController(
+            ConsultaController consultaController,
             UtilService utilService,
             ConsultaService consultaService,
             Wsdl03Service wsdl03Service,
             Wsdl04Service wsdl04Service,
             Wsdl05Service wsdl05Service,
             Wsdl07Service wsdl07Service,
-            ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository, ConsultaController consultaController
+            ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository
 
     ) {
+        this.consultaController = consultaController;
         this.utilService = utilService;
         this.consultaService = consultaService;
         this.wsdl03Service = wsdl03Service;
@@ -99,6 +102,17 @@ public class TestController {
     public static class Nombres {
         public String nombre1;
         public String nombre2;
+    }
+
+    @PostMapping("/consulta")
+    public ResponseEntity<? extends ResponseDto> testConsulta(
+        @RequestBody String strData
+    ) {
+        String[] data = strData.trim().split(";");
+        RequestGetRemittanceDataDto requestData = new RequestGetRemittanceDataDto();
+        requestData.setCanal(data[0]);
+        requestData.setIdentificadorRemesa(data[1]);
+        return this.consultaController.validateRemittance(requestData);
     }
 
     //Jaccard

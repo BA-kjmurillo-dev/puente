@@ -52,7 +52,7 @@ public class ConsultaController {
         this.wsdl07Service = wsdl07Service;
     }
 
-    @GetMapping()
+    @PostMapping()
     public ResponseEntity<? extends ResponseDto> validateRemittance(
         @RequestBody RequestGetRemittanceDataDto requestData
     ) {
