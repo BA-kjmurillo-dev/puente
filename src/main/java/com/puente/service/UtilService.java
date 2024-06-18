@@ -2,6 +2,8 @@ package com.puente.service;
 
 import com.puente.persistence.entity.MessageCodesEntity;
 import com.puente.service.dto.ResponseDto;
+import com.puente.service.dto.comparacionNombreDto;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import java.util.HashSet;
@@ -17,9 +19,12 @@ import org.springframework.stereotype.Service;
 @Service
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class UtilService {
     @Autowired
     private MessageCodesService messageCodesService;
+    private comparacionNombreDto comparacionNombreDto;
+    private static int numerico = 0;
 
     public Boolean isResponseSuccess(ResponseDto servicesResponse) {
         return servicesResponse.getMessageCode().equals("000000");
@@ -206,13 +211,15 @@ public class UtilService {
         return remCod.length() == 10 || "000016".equals(mrEcod);
     }
 
+    //Correcion de nombre
     public static String normalize(String name) {
         String normalized = Normalizer.normalize(name, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(normalized).replaceAll("").toLowerCase().replaceAll("\\s+", " ").trim();
+        String respult = pattern.matcher(normalized).replaceAll("").toLowerCase().replaceAll("\\s+", " ").trim();
+        return respult;
     }
-
-    public double calculateJaccardSimilarity(String s1, String s2, int n) {
+    //Jaccard
+    public static double calculateJaccardSimilarity(String s1, String s2, int n) {
         Set<String> nGrams1 = generateNGrams(s1, n);
         Set<String> nGrams2 = generateNGrams(s2, n);
 
@@ -224,8 +231,8 @@ public class UtilService {
 
         return (double) intersection.size() / union.size();
     }
-
-    private Set<String> generateNGrams(String s, int n) {
+    //Jaccard
+    private static Set<String> generateNGrams(String s, int n) {
         Set<String> nGrams = new HashSet<>();
         for (int i = 0; i <= s.length() - n; i++) {
             nGrams.add(s.substring(i, i + n));
@@ -233,38 +240,156 @@ public class UtilService {
         return nGrams;
     }
 
-    public static int needlemanWunsch(String s1, String s2, int match, int mismatch, int gap) {
+    //JaroWinkler
+    public static double jaroWinklerSimilarity(String s1, String s2) {
+        if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;;
+        if ((s1 == null || s1.isEmpty()) || (s2 == null || s2.isEmpty())) return 0.0;
+        numerico ++;
+        s1 = normalize(s1);
+        s2 = normalize(s2);
+        int s1_len = s1.length();
+        int s2_len = s2.length();
+        int match_distance = Integer.max(s1_len, s2_len) / 2 - 1;
+
+        boolean[] s1_matches = new boolean[s1_len];
+        boolean[] s2_matches = new boolean[s2_len];
+
+        int matches = 0;
+        for (int i = 0; i < s1_len; i++) {
+            int start = Integer.max(0, i - match_distance);
+            int end = Integer.min(i + match_distance + 1, s2_len);
+
+            for (int j = start; j < end; j++) {
+                if (s2_matches[j]) continue;
+                if (s1.charAt(i) != s2.charAt(j)) continue;
+                s1_matches[i] = true;
+                s2_matches[j] = true;
+                matches++;
+                break;
+            }
+        }
+
+        if (matches == 0) return 0.0;
+
+        double t = 0;
+        int k = 0;
+        for (int i = 0; i < s1_len; i++) {
+            if (!s1_matches[i]) continue;
+            while (!s2_matches[k]) k++;
+            if (s1.charAt(i) != s2.charAt(k)) t++;
+            k++;
+        }
+
+        double m = matches;
+        double jaro = ((m / s1_len) + (m / s2_len) + ((m - t / 2) / m)) / 3;
+        double p = 0.1;
+        int l = 0;
+
+        while (l < Integer.min(s1_len, s2_len) && s1.charAt(l) == s2.charAt(l) && l < 4) l++;
+
+        return jaro + l * p * (1 - jaro);
+    }
+
+    //needlemanWunsch
+    public static double needlemanWunsch(String s1, String s2, int MATCH_SCORE, int MISMATCH_PENALTY, int GAP_PENALTY) {
+        int len1 = s1.length();
+        int len2 = s2.length();
+
+        int[][] scoreMatrix = new int[len1 + 1][len2 + 1];
+
+        for (int i = 0; i <= len1; i++) {
+            scoreMatrix[i][0] = i * GAP_PENALTY;
+        }
+
+        for (int j = 0; j <= len2; j++) {
+            scoreMatrix[0][j] = j * GAP_PENALTY;
+        }
+
+        for (int i = 1; i <= len1; i++) {
+            for (int j = 1; j <= len2; j++) {
+                int match = scoreMatrix[i - 1][j - 1] + (s1.charAt(i - 1) == s2.charAt(j - 1) ? MATCH_SCORE : MISMATCH_PENALTY);
+                int delete = scoreMatrix[i - 1][j] + GAP_PENALTY;
+                int insert = scoreMatrix[i][j - 1] + GAP_PENALTY;
+                scoreMatrix[i][j] = Math.max(match, Math.max(delete, insert));
+            }
+        }
+
+        int maxScore = Math.max(len1, len2) * MATCH_SCORE;
+        return (double) scoreMatrix[len1][len2] / maxScore;
+    }
+
+    public static double calcularSimilaridad(comparacionNombreDto comparacionNombreDto) {
+
+        double similitudTotal = 0;
+        double similitudTotalL = 0;
+        double similitudTotalJW = 0;
+
+        double similitudBp1 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
+        double similutudS1 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
+
+        double similitudBp2 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon());
+        double similutudS2 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon());
+
+        double similitudBp3 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon());
+        double similutudS3 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon());
+
+        double similitudBp4 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
+        double similutudS4 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
+
+
+
+        similitudTotal = (similitudBp1 + similutudS1 + similitudBp2 + similutudS2 + similitudBp3 + similutudS3 + similitudBp4 + similutudS4) / 8;
+
+
+        return similitudTotal;
+    }
+
+    //Levenshtein
+    public static double calculaNombreSpearados(String name1, String name2) {
+        String[] partes1 = normalize(name1).split(" ");
+        String[] partse2 = normalize(name2).split(" ");
+
+        double total = 0;
+        int resultaComparaciones = Math.min(partes1.length, partse2.length);
+
+        for (int i = 0; i < resultaComparaciones; i++) {
+            total += Levenshtein(partes1[i], partse2[i]);
+        }
+
+        return total / resultaComparaciones;
+    }
+    //Levenshtein
+    public static int computeLevenshteinDistance(String s1, String s2) {
         int[][] dp = new int[s1.length() + 1][s2.length() + 1];
 
         for (int i = 0; i <= s1.length(); i++) {
-            dp[i][0] = i * gap;
-        }
-
-        for (int j = 0; j <= s2.length(); j++) {
-            dp[0][j] = j * gap;
-        }
-
-        for (int i = 1; i <= s1.length(); i++) {
-            for (int j = 1; j <= s2.length(); j++) {
-                int matchScore = dp[i - 1][j - 1] + (s1.charAt(i - 1) == s2.charAt(j - 1) ? match : mismatch);
-                int delete = dp[i - 1][j] + gap;
-                int insert = dp[i][j - 1] + gap;
-                dp[i][j] = Math.max(matchScore, Math.max(delete, insert));
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    int cost = s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1;
+                    dp[i][j] = Math.min(
+                            Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1),
+                            dp[i - 1][j - 1] + cost
+                    );
+                }
             }
         }
 
         return dp[s1.length()][s2.length()];
     }
+    //Levenshtein
+    public static double Levenshtein(String s1, String s2) {
 
-    public static void main(String[] args) {
-        String s1 = "GATTACA";
-        String s2 = "GCATGCU";
-        int match = 1;
-        int mismatch = -1;
-        int gap = -1;
 
-        int score = needlemanWunsch(s1, s2, match, mismatch, gap);
-        System.out.println("La puntuación de alineación óptima es: " + score);
+        if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;
+        if ((s1 == null || s1.isEmpty()) || (s2 == null || s2.isEmpty())) return 0.0;
+        int maxLen = Math.max(s1.length(), s2.length());
+
+        s1 = normalize(s1);
+        s2 = normalize(s2);
+        return (1.0 - ((double) computeLevenshteinDistance(s1, s2) / maxLen));
     }
-
 }
