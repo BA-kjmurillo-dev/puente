@@ -15,6 +15,7 @@ import com.puente.service.*;
 @RequestMapping("/test")
 public class TestController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
+    private final ConsultaController consultaController;
     private final ConsultaService consultaService;
     private final UtilService consultaRemesadoraServices;
     private final Wsdl03Service wsdl03Service;
@@ -25,6 +26,7 @@ public class TestController {
 
     @Autowired
     public TestController(
+            ConsultaController consultaController,
             ConsultaService consultaService,
             UtilService consultaRemesadoraServices,
             Wsdl03Service wsdl03Service,
@@ -33,6 +35,7 @@ public class TestController {
             Wsdl07Service wsdl07Service, ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository
 
     ) {
+        this.consultaController = consultaController;
         this.consultaService = consultaService;
         this.consultaRemesadoraServices = consultaRemesadoraServices;
         this.wsdl03Service = wsdl03Service;
@@ -97,6 +100,17 @@ public class TestController {
     public static class Nombres {
         public String nombre1;
         public String nombre2;
+    }
+
+    @PostMapping("/consulta")
+    public ResponseEntity<? extends ResponseDto> testConsulta(
+        @RequestBody String strData
+    ) {
+        String[] data = strData.trim().split(";");
+        RequestGetRemittanceDataDto requestData = new RequestGetRemittanceDataDto();
+        requestData.setCanal(data[0]);
+        requestData.setIdentificadorRemesa(data[1]);
+        return this.consultaController.validateRemittance(requestData);
     }
 
     @PostMapping("/diferenciaj")
