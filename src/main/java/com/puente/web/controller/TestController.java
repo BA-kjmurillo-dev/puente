@@ -1,5 +1,6 @@
 package com.puente.web.controller;
 
+import com.puente.client.WsdlBpClient;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
 import com.puente.service.dto.*;
@@ -24,6 +25,7 @@ public class TestController {
     private final Wsdl05Service wsdl05Service;
     private final Wsdl07Service wsdl07Service;
     private final ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository;
+    private final WsdlBpClient wsdlBpClient;
 
     @Autowired
     public TestController(
@@ -33,8 +35,7 @@ public class TestController {
             Wsdl03Service wsdl03Service,
             Wsdl04Service wsdl04Service,
             Wsdl05Service wsdl05Service,
-            Wsdl07Service wsdl07Service,
-            ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository
+            Wsdl07Service wsdl07Service, ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository, WsdlBpClient wsdlBpClient
 
     ) {
         this.consultaController = consultaController;
@@ -45,6 +46,7 @@ public class TestController {
         this.wsdl05Service = wsdl05Service;
         this.wsdl07Service = wsdl07Service;
         this.valoresGlobalesRemesasRepository = valoresGlobalesRemesasRepository;
+        this.wsdlBpClient = wsdlBpClient;
     }
 
     @PostMapping("/remittanceAlgorithm")
@@ -193,6 +195,11 @@ public class TestController {
                 return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
             }
         }
+    }
+
+    @GetMapping("/wsdlbp/{idNumber}")
+    public ResponseEntity<?> wsdlBpTest(@PathVariable String idNumber){
+        return ResponseEntity.ok(wsdlBpClient.getResponse(idNumber));
     }
 
     @PostMapping("/diferenciaj5")
