@@ -151,9 +151,20 @@
 							<extension>true</extension>
 						</configuration>
 					</execution>
+					<execution>
+						<id>servicioBP</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+							<packageName>com.soap.wsdl.serviceBP</packageName>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
 				</executions>
-
-
 			</plugin>
 			<!-- end::wsdl[] -->
 		</plugins>
