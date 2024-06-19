@@ -87,20 +87,26 @@ public class ConsultaController {
 
             // Validate Remittance in Sireon Wsdl07 async
             CompletableFuture<Wsdl07Dto> getRemittanceByIdentifierAsync = CompletableFuture.supplyAsync(() -> {
-                ServicesRequest007ItemSolicitud request07 = new ServicesRequest007ItemSolicitud();
-                request07.setCanal(channelInfo.getCodigoCanalSireon());
-                request07.setCodigoBanco(bank.getValor());
-                request07.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
+                ServicesRequest007ItemSolicitud request07 = this.getRequest07(
+                    requestData, bank, channelInfo
+                );
                 return this.wsdl07Service.getRemittanceByIdentifier(request07);
+            });
+
+            // Validate Remittance Algorithm async
+            CompletableFuture<String> validateRemittanceAlgorithmAsync = CompletableFuture.supplyAsync(() -> {
+                return this.utilService.ConsultaRemesadora(requestData.getIdentificadorRemesa());
             });
 
             return CompletableFuture.allOf(
                 getRemittersListByChannelAsync, //Wsdl05
-                getRemittanceByIdentifierAsync //Wsdl07
+                getRemittanceByIdentifierAsync, //Wsdl07
+                validateRemittanceAlgorithmAsync //Algorithm
             ).thenApply(v -> {
                 try {
                     Wsdl05Dto wsdl05Response = getRemittersListByChannelAsync.get(); //Wsdl05 response
                     Wsdl07Dto wsdl07Response = getRemittanceByIdentifierAsync.get(); //Wsdl07 response
+                    String remittanceAlgorithmResponse = validateRemittanceAlgorithmAsync.get(); //Algorithm response
 
                     if(!this.utilService.isResponseSuccess(wsdl05Response)) {
                         // error Wsdl05
@@ -124,7 +130,7 @@ public class ConsultaController {
                     } else {
                         // TO DO: devolver un objeto con una bandera y la remesadora y modificar el if "error"
                         // Validate Remittance Algorithm
-                        remitterCode = this.utilService.ConsultaRemesadora(requestData.getIdentificadorRemesa());
+                        remitterCode = remittanceAlgorithmResponse;
                     }
 
                     if("error".equals(remitterCode)) {
@@ -173,6 +179,13 @@ public class ConsultaController {
                         return ResponseEntity.ok(formattedResponse);
                     }
 
+                    // validate empty wsdl03 response
+                    if(wsdl03Response.getData().getIdentificadorRemesa().isEmpty()) {
+                        return ResponseEntity.ok(
+                            this.utilService.getCustomMessageCode("V30201") // remittance data not found
+                        );
+                    }
+
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
                     responseGetRemittanceDataDto.setData(wsdl03Response.getData());
                     return ResponseEntity.ok(responseGetRemittanceDataDto);
@@ -205,5 +218,17 @@ public class ConsultaController {
         request03.setCanal(channelInfo.getCodigoCanalSireon());
         request03.setItemRemesa(sdtServicioVentanillaInItemRemesa);
         return request03;
+    }
+
+    private ServicesRequest007ItemSolicitud getRequest07(
+        RequestGetRemittanceDataDto requestData,
+        ValoresGlobalesRemesasEntity bank,
+        SeguridadCanalEntity channelInfo
+    ) {
+        ServicesRequest007ItemSolicitud request07 = new ServicesRequest007ItemSolicitud();
+        request07.setCanal(channelInfo.getCodigoCanalSireon());
+        request07.setCodigoBanco(bank.getValor());
+        request07.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
+        return request07;
     }
 }
