@@ -142,8 +142,8 @@ public class ConsultaController {
                     // get BP info
                     DTCreaBusinessPartnerResp bpInfo = this.wsdlBpService.getBpInfo(requestData.getIdentificacion());
                     boolean existBp = this.utilService.existBp(bpInfo);
+                    boolean isJteller = channelInfo.getCanal().equals("jteller");
                     if(!existBp) {
-                        boolean isJteller = channelInfo.getCanal().equals("jteller");
                         if(!isJteller) {
                             return ResponseEntity.ok(
                                 this.utilService.getCustomMessageCode("ERROR04") // Error, se debe Crear BP
@@ -187,7 +187,10 @@ public class ConsultaController {
                     }
 
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
+                    responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
+                    responseGetRemittanceDataDto.setMessageCode(wsdl03Response.getMessageCode());
                     responseGetRemittanceDataDto.setData(wsdl03Response.getData());
+                    if(isJteller) { responseGetRemittanceDataDto.setExisteBp(existBp); }
                     return ResponseEntity.ok(responseGetRemittanceDataDto);
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Error while processing async requests", e);
