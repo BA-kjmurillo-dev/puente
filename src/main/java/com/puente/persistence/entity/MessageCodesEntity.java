@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MessageCodesEntity {
     @Id
-    @Column(nullable = false, length = 25)
+    @Column(name = "message_code", nullable = false, length = 25)
     private String messageCode;
 
     @Column(nullable = false, length = 10)
@@ -23,4 +23,7 @@ public class MessageCodesEntity {
 
     @Column(length = 100)
     private String message;
+
+    @Column(name = "technical_message")
+    private String technicalMessage;
 }
