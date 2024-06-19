@@ -14,7 +14,9 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
     private MyProperties myProperties;
     private static final Logger log = LoggerFactory.getLogger(Wsdl03Client.class);
 
-    public WSSIREON003SERVICIOVENTANILLAResponse getRemittanceData(RequestGetRemittanceDataDto request03) {
+    public WSSIREON003SERVICIOVENTANILLAResponse getRemittanceData(
+        SDTServicioVentanillaIn request03
+    ) {
         //Credentials
         ServicesCredentials credentials = new ServicesCredentials();
         credentials.setServicesUser(myProperties.getServicesUser());
@@ -28,10 +30,10 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
 
         //Item Remesa
         SDTServicioVentanillaInItemRemesa SDTServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
-        SDTServicioVentanillaInItemRemesa.setCodigoBanco(request03.getCodigoBanco());
-        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(request03.getCodigoRemesadora());
-        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(request03.getIdentificadorRemesa());
-        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(request03.getTipoFormaPago());
+        SDTServicioVentanillaInItemRemesa.setCodigoBanco(request03.getItemRemesa().getCodigoBanco());
+        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(request03.getItemRemesa().getCodigoRemesadora());
+        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(request03.getItemRemesa().getIdentificadorRemesa());
+        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(request03.getItemRemesa().getTipoFormaPago());
 
         SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
 

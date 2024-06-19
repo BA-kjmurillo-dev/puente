@@ -10,7 +10,7 @@ public class WsdlBpService {
     @Autowired
     private WsdlBpClient wsdlBpClient;
 
-    public DTCreaBusinessPartnerResp response(){
-        return null;
+    public DTCreaBusinessPartnerResp getBpInfo(String idNumber) {
+        return wsdlBpClient.getResponse(idNumber);
     }
 }

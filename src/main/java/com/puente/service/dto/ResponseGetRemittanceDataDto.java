@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestGetRemittanceDataDto {
-    private String canal;
-    private String identificadorRemesa;
-    private String identificacion;
+public class ResponseGetRemittanceDataDto {
+    private String messageCode;
+    private String message;
+    private SDTServicioVentanillaOutItemRemesa data;
 }

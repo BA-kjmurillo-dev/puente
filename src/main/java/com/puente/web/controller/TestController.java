@@ -4,6 +4,8 @@ import com.puente.client.WsdlBpClient;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
 import com.puente.service.dto.*;
+import com.soap.wsdl.service03.SDTServicioVentanillaIn;
+import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,11 +75,13 @@ public class TestController {
 
     @GetMapping("/wsdl03")
     public ResponseEntity<Wsdl03Dto> wsdl03Test() {
-        RequestGetRemittanceDataDto request03 = new RequestGetRemittanceDataDto();
+        SDTServicioVentanillaInItemRemesa sdtServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
+        sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa("202405230001");
+        sdtServicioVentanillaInItemRemesa.setCodigoBanco("2000");
+        sdtServicioVentanillaInItemRemesa.setCodigoRemesadora("000016");
+        SDTServicioVentanillaIn request03 = new SDTServicioVentanillaIn();
         request03.setCanal("0002");
-        request03.setIdentificadorRemesa("202405230001");
-        request03.setCodigoBanco("2000");
-        request03.setCodigoRemesadora("000016");
+        request03.setItemRemesa(sdtServicioVentanillaInItemRemesa);
         return ResponseEntity.ok(this.wsdl03Service.getRemittanceData(request03));
     }
 
@@ -107,7 +111,7 @@ public class TestController {
     }
 
     @PostMapping("/consulta")
-    public ResponseEntity<? extends ResponseDto> testConsulta(
+    public ResponseEntity<ResponseGetRemittanceDataDto> testConsulta(
         @RequestBody String strData
     ) {
         String[] data = strData.trim().split(";");

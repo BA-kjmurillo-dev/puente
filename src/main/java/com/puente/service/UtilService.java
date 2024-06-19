@@ -3,11 +3,18 @@ package com.puente.service;
 import com.puente.persistence.entity.MessageCodesEntity;
 import com.puente.service.dto.ResponseDto;
 import com.puente.service.dto.comparacionNombreDto;
+import com.puente.service.dto.ResponseGetRemittanceDataDto;
+import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person.Name;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Optional;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 import java.text.Normalizer;
@@ -30,10 +37,37 @@ public class UtilService {
         return servicesResponse.getMessageCode().equals("000000");
     }
 
-    public ResponseDto getFormattedMessageCode(ResponseDto servicesResponse) {
+    public Boolean existBp(DTCreaBusinessPartnerResp bpInfo) {
+        DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
+        String internalID = businessPartnerResp.getInternalID();
+        String givenName = Optional.of(businessPartnerResp)
+            .map(DTDataBusinessPartnerResp::getCommon)
+            .map(Common::getPerson)
+            .map(Person::getName)
+            .map(Name::getGivenName)
+            .orElse(null);
+        return internalID != null && givenName != null;
+    }
+
+    public ResponseGetRemittanceDataDto getCustomMessageCode(String code) {
+        ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
+        messageCode.setMessageCode(code);
+        return this.getFormattedMessageCode(messageCode);
+    }
+
+    public ResponseGetRemittanceDataDto getWsdlMessageCode(ResponseDto responseWsdl) {
+        ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
+        messageCode.setMessageCode(responseWsdl.getMessageCode());
+        messageCode.setMessage(responseWsdl.getMessage());
+        return this.getFormattedMessageCode(messageCode);
+    }
+
+    public ResponseGetRemittanceDataDto getFormattedMessageCode(
+        ResponseGetRemittanceDataDto servicesResponse
+    ) {
         MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getMessageCode());
-        ResponseDto formattedResponse = new ResponseDto();
-        if(messageCode == null) {
+        ResponseGetRemittanceDataDto formattedResponse = new ResponseGetRemittanceDataDto();
+        if(messageCode == null || messageCode.getMessage() == null) {
             formattedResponse.setMessage(servicesResponse.getMessage());
             formattedResponse.setMessageCode(servicesResponse.getMessageCode());
         } else {
@@ -43,8 +77,8 @@ public class UtilService {
         return formattedResponse;
     }
 
-    public ResponseDto getExceptionMessageCode(Exception e) {
-        ResponseDto responseDto = new ResponseDto();
+    public ResponseGetRemittanceDataDto getExceptionMessageCode(Exception e) {
+        ResponseGetRemittanceDataDto responseDto = new ResponseGetRemittanceDataDto();
         responseDto.setMessageCode("03");
         responseDto.setMessage(e.getMessage());
         return this.getFormattedMessageCode(responseDto);

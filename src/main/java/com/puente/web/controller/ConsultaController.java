@@ -4,7 +4,10 @@ import com.puente.persistence.entity.SeguridadCanalEntity;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.service.*;
 import com.puente.service.dto.*;
+import com.soap.wsdl.service03.SDTServicioVentanillaIn;
+import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
+import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,19 +33,21 @@ public class ConsultaController {
     private final Wsdl04Service wsdl04Service;
     private final Wsdl05Service wsdl05Service;
     private final Wsdl07Service wsdl07Service;
+    private final WsdlBpService wsdlBpService;
 
     @Autowired
     public ConsultaController(
-        UtilService commonService,
+        UtilService utilService,
         ValoresGlobalesRemesasService valoresGlobalesService,
         SeguridadCanalService seguridadCanalService,
         ConsultaService consultaService,
         Wsdl03Service wsdl03Service,
         Wsdl04Service wsdl04Service,
         Wsdl05Service wsdl05Service,
-        Wsdl07Service wsdl07Service
+        Wsdl07Service wsdl07Service,
+        WsdlBpService wsdlBpService
     ) {
-        this.utilService = commonService;
+        this.utilService = utilService;
         this.valoresGlobalesService = valoresGlobalesService;
         this.seguridadCanalService = seguridadCanalService;
         this.consultaService = consultaService;
@@ -50,10 +55,11 @@ public class ConsultaController {
         this.wsdl04Service = wsdl04Service;
         this.wsdl05Service = wsdl05Service;
         this.wsdl07Service = wsdl07Service;
+        this.wsdlBpService = wsdlBpService;
     }
 
     @PostMapping()
-    public ResponseEntity<? extends ResponseDto> validateRemittance(
+    public ResponseEntity<ResponseGetRemittanceDataDto> validateRemittance(
         @RequestBody RequestGetRemittanceDataDto requestData
     ) {
         try {
@@ -61,16 +67,16 @@ public class ConsultaController {
             SeguridadCanalEntity channelInfo = this.seguridadCanalService.findBychannelCode(requestData.getCanal());
             ValoresGlobalesRemesasEntity bank = valoresGlobalesService.findByCodeAndItem( "01", "bank");
             if(channelInfo == null) {
-                ResponseDto responseDto = new ResponseDto();
-                responseDto.setMessageCode("CUSTOM01"); // channel is not parameterized
-                ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
-                return ResponseEntity.ok(formattedResponse);
+                return ResponseEntity.ok(
+                    this.utilService.getCustomMessageCode("ERROR01") // channel is not parameterized
+                );
             }
 
             // Validate Sireon Active Wsdl04
             Wsdl04Dto wsdl04Response = this.wsdl04Service.testSireonConection(channelInfo.getCodigoCanalSireon());
             if(!this.utilService.isResponseSuccess(wsdl04Response)) {
-                ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl04Response);
+                // error Wsdl04
+                ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl04Response);
                 return ResponseEntity.ok(formattedResponse);
             }
 
@@ -93,11 +99,12 @@ public class ConsultaController {
                 getRemittanceByIdentifierAsync //Wsdl07
             ).thenApply(v -> {
                 try {
-                    Wsdl05Dto wsdl05Response = getRemittersListByChannelAsync.get();
-                    Wsdl07Dto wsdl07Response = getRemittanceByIdentifierAsync.get();
+                    Wsdl05Dto wsdl05Response = getRemittersListByChannelAsync.get(); //Wsdl05 response
+                    Wsdl07Dto wsdl07Response = getRemittanceByIdentifierAsync.get(); //Wsdl07 response
 
                     if(!this.utilService.isResponseSuccess(wsdl05Response)) {
-                        ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl05Response);
+                        // error Wsdl05
+                        ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl05Response);
                         return ResponseEntity.ok(formattedResponse);
                     }
 
@@ -110,10 +117,9 @@ public class ConsultaController {
                         if(isValidStatus) {
                             remitterCode = wsdl07Response.getData().getCodigoRemesadora();
                         } else {
-                            ResponseDto responseDto = new ResponseDto();
-                            responseDto.setMessageCode("CUSTOM03"); // Status remittance not valid
-                            ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
-                            return ResponseEntity.ok(formattedResponse);
+                            return ResponseEntity.ok(
+                                this.utilService.getCustomMessageCode("ERROR03") // Status remittance not valid
+                            );
                         }
                     } else {
                         // TO DO: devolver un objeto con una bandera y la remesadora y modificar el if "error"
@@ -122,48 +128,82 @@ public class ConsultaController {
                     }
 
                     if("error".equals(remitterCode)) {
-                        ResponseDto responseDto = new ResponseDto();
-                        responseDto.setMessageCode("SIREMU"); // Pay for Siremu
-                        ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
-                        return ResponseEntity.ok(formattedResponse);
+                        return ResponseEntity.ok(
+                            this.utilService.getCustomMessageCode("SIREMU") // Pay for Siremu
+                        );
                     }
 
+                    // get BP info
+                    DTCreaBusinessPartnerResp bpInfo = this.wsdlBpService.getBpInfo(requestData.getIdentificacion());
+                    boolean existBp = this.utilService.existBp(bpInfo);
+                    if(!existBp) {
+                        boolean isJteller = channelInfo.getCanal().equals("jteller");
+                        if(!isJteller) {
+                            return ResponseEntity.ok(
+                                this.utilService.getCustomMessageCode("ERROR04") // Error, se debe Crear BP
+                            );
+                        }
+                    }
+
+                    //validate BP Status
+                    if(bpInfo.getCheckLists().getStatus() != null) {
+                        return ResponseEntity.ok(
+                             this.utilService.getCustomMessageCode("ERROR05") // Error in BP Status
+                        );
+                    }
+
+                    // Validate Remitter in channel
                     boolean isChannelValid = remittersList.stream()
                             .anyMatch(remitter -> remitter.getCodigoRemesador().equals(remitterCode));
 
                     if(!isChannelValid) {
-                        ResponseDto responseDto = new ResponseDto();
-                        responseDto.setMessageCode("CUSTOM02"); // This remitter cannot pay for this channel.
-                        ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(responseDto);
-                        return ResponseEntity.ok(formattedResponse);
+                        return ResponseEntity.ok(
+                            this.utilService.getCustomMessageCode("ERROR02") // This remitter cannot pay for this channel.
+                        );
                     }
 
                     // Get Remittance Data Wsdl03
-                    RequestGetRemittanceDataDto request03 = new RequestGetRemittanceDataDto();
-                    request03.setCanal(channelInfo.getCodigoCanalSireon());
-                    request03.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
-                    request03.setCodigoBanco(bank.getValor());
-                    request03.setCodigoRemesadora(remitterCode);
-                    request03.setTipoFormaPago(consultaService.getPaymentType(channelInfo.getMetodoPago()));
-
+                    SDTServicioVentanillaIn request03 = this.getRequest03(
+                        requestData, bank, remitterCode, channelInfo
+                    );
                     Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
-
                     if(!this.utilService.isResponseSuccess(wsdl03Response)) {
-                        ResponseDto formattedResponse = this.utilService.getFormattedMessageCode(wsdl03Response);
+                        // error Wsdl03
+                        ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl03Response);
                         return ResponseEntity.ok(formattedResponse);
                     }
 
-                    return ResponseEntity.ok(wsdl03Response);
+                    ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
+                    responseGetRemittanceDataDto.setData(wsdl03Response.getData());
+                    return ResponseEntity.ok(responseGetRemittanceDataDto);
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Error while processing async requests", e);
-                    ResponseDto formattedResponse = this.utilService.getExceptionMessageCode(e);
+                    ResponseGetRemittanceDataDto formattedResponse = this.utilService.getExceptionMessageCode(e);
                     return ResponseEntity.ok(formattedResponse);
                 }
             }).join();
         } catch (Exception e) {
             log.error("Error while processing async requests", e);
-            ResponseDto formattedResponse = this.utilService.getExceptionMessageCode(e);
+            ResponseGetRemittanceDataDto formattedResponse = this.utilService.getExceptionMessageCode(e);
             return ResponseEntity.ok(formattedResponse);
         }
+    }
+
+    private SDTServicioVentanillaIn getRequest03(
+        RequestGetRemittanceDataDto requestData,
+        ValoresGlobalesRemesasEntity bank,
+        String remitterCode,
+        SeguridadCanalEntity channelInfo
+    ) {
+        SDTServicioVentanillaInItemRemesa sdtServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
+        sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
+        sdtServicioVentanillaInItemRemesa.setCodigoBanco(bank.getValor());
+        sdtServicioVentanillaInItemRemesa.setCodigoRemesadora(remitterCode);
+        sdtServicioVentanillaInItemRemesa.setTipoFormaPago(consultaService.getPaymentType(channelInfo.getMetodoPago()));
+
+        SDTServicioVentanillaIn request03 = new SDTServicioVentanillaIn();
+        request03.setCanal(channelInfo.getCodigoCanalSireon());
+        request03.setItemRemesa(sdtServicioVentanillaInItemRemesa);
+        return request03;
     }
 }
