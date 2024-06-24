@@ -15,8 +15,8 @@ import lombok.ToString;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Optional;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UtilService {
+    @Autowired
+    private static final Logger log = LoggerFactory.getLogger(UtilService.class);
     @Autowired
     private MessageCodesService messageCodesService;
     private comparacionNombreDto comparacionNombreDto;
@@ -74,12 +76,29 @@ public class UtilService {
             formattedResponse.setMessage(messageCode.getMessage());
             formattedResponse.setMessageCode(messageCode.getCode());
         }
+        // Technical message
+        this.setTechnicalMessageLog(messageCode);
         return formattedResponse;
+    }
+
+    public void getCustomTechnicalMessage(String code) {
+        MessageCodesEntity messageCode = messageCodesService.get(code);
+        this.setTechnicalMessageLog(messageCode);
+    }
+
+    public void setTechnicalMessageLog(MessageCodesEntity messageCode) {
+        if(messageCode != null) {
+            if(messageCode.getTechnicalMessage() != null) {
+                log.error(messageCode.getTechnicalMessage());
+            } else if(messageCode.getMessage() != null) {
+                log.error(messageCode.getMessage());
+            }
+        }
     }
 
     public ResponseGetRemittanceDataDto getExceptionMessageCode(Exception e) {
         ResponseGetRemittanceDataDto responseDto = new ResponseGetRemittanceDataDto();
-        responseDto.setMessageCode("03");
+        responseDto.setMessageCode("Exception");
         responseDto.setMessage(e.getMessage());
         return this.getFormattedMessageCode(responseDto);
     }

@@ -8,6 +8,7 @@ import com.soap.wsdl.service03.SDTServicioVentanillaIn;
 import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
+import jakarta.validation.Valid;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class ConsultaController {
 
     @PostMapping()
     public ResponseEntity<ResponseGetRemittanceDataDto> validateRemittance(
-        @RequestBody RequestGetRemittanceDataDto requestData
+        @Valid @RequestBody RequestGetRemittanceDataDto requestData
     ) {
         try {
             // get channel information
@@ -76,6 +77,7 @@ public class ConsultaController {
             Wsdl04Dto wsdl04Response = this.wsdl04Service.testSireonConection(channelInfo.getCodigoCanalSireon());
             if(!this.utilService.isResponseSuccess(wsdl04Response)) {
                 // error Wsdl04
+                this.utilService.getCustomTechnicalMessage("ERRORWSDL04");
                 ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl04Response);
                 return ResponseEntity.ok(formattedResponse);
             }
@@ -110,6 +112,7 @@ public class ConsultaController {
 
                     if(!this.utilService.isResponseSuccess(wsdl05Response)) {
                         // error Wsdl05
+                        this.utilService.getCustomTechnicalMessage("ERRORWSDL05");
                         ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl05Response);
                         return ResponseEntity.ok(formattedResponse);
                     }
@@ -175,6 +178,7 @@ public class ConsultaController {
                     Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
                     if(!this.utilService.isResponseSuccess(wsdl03Response)) {
                         // error Wsdl03
+                        this.utilService.getCustomTechnicalMessage("ERRORWSDL03");
                         ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl03Response);
                         return ResponseEntity.ok(formattedResponse);
                     }
@@ -215,7 +219,6 @@ public class ConsultaController {
         sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa(requestData.getIdentificadorRemesa());
         sdtServicioVentanillaInItemRemesa.setCodigoBanco(bank.getValor());
         sdtServicioVentanillaInItemRemesa.setCodigoRemesadora(remitterCode);
-        sdtServicioVentanillaInItemRemesa.setTipoFormaPago(consultaService.getPaymentType(channelInfo.getMetodoPago()));
 
         SDTServicioVentanillaIn request03 = new SDTServicioVentanillaIn();
         request03.setCanal(channelInfo.getCodigoCanalSireon());
