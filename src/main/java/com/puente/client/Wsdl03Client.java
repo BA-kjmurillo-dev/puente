@@ -33,7 +33,6 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
         SDTServicioVentanillaInItemRemesa.setCodigoBanco(request03.getItemRemesa().getCodigoBanco());
         SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(request03.getItemRemesa().getCodigoRemesadora());
         SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(request03.getItemRemesa().getIdentificadorRemesa());
-        SDTServicioVentanillaInItemRemesa.setTipoFormaPago(request03.getItemRemesa().getTipoFormaPago());
 
         SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
 
