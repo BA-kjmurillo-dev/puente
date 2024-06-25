@@ -35,4 +35,18 @@ public class MyProperties {
     private String Awssireon007;
     @Value("${CodigoRemesadora}")
     private String CodigoRemesadora;
+    @Value("${NumeroVigo}")
+    private String NumeroVigo;
+    @Value("${NumeroUni}")
+    private String NumeroUni;
+    @Value("${NumeroMg}")
+    private String NumeroMg;
+    @Value("${NumeroBts}")
+    private String NumeroBts;
+    @Value("${NumeroRia}")
+    private String NumeroRia;
+    @Value("${NumeroMaxi}")
+    private String NumeroMaxi;
+
+
 }

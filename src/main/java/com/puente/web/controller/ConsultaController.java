@@ -96,7 +96,7 @@ public class ConsultaController {
             });
 
             // Validate Remittance Algorithm async
-            CompletableFuture<String> validateRemittanceAlgorithmAsync = CompletableFuture.supplyAsync(() -> {
+            CompletableFuture<RemittanceAlgorithmDto> validateRemittanceAlgorithmAsync = CompletableFuture.supplyAsync(() -> {
                 return this.utilService.ConsultaRemesadora(requestData.getIdentificadorRemesa());
             });
 
@@ -108,7 +108,7 @@ public class ConsultaController {
                 try {
                     Wsdl05Dto wsdl05Response = getRemittersListByChannelAsync.get(); //Wsdl05 response
                     Wsdl07Dto wsdl07Response = getRemittanceByIdentifierAsync.get(); //Wsdl07 response
-                    String remittanceAlgorithmResponse = validateRemittanceAlgorithmAsync.get(); //Algorithm response
+                    RemittanceAlgorithmDto remittanceAlgorithmResponse = validateRemittanceAlgorithmAsync.get(); //Algorithm response
 
                     if(!this.utilService.isResponseSuccess(wsdl05Response)) {
                         // error Wsdl05
@@ -133,10 +133,10 @@ public class ConsultaController {
                     } else {
                         // TO DO: devolver un objeto con una bandera y la remesadora y modificar el if "error"
                         // Validate Remittance Algorithm
-                        remitterCode = remittanceAlgorithmResponse;
+                        remitterCode = remittanceAlgorithmResponse.getMessage();
                     }
 
-                    if("error".equals(remitterCode)) {
+                    if("false".equals(remitterCode)) {
                         return ResponseEntity.ok(
                             this.utilService.getCustomMessageCode("SIREMU") // Pay for Siremu
                         );
@@ -163,7 +163,7 @@ public class ConsultaController {
 
                     // Validate Remitter in channel
                     boolean isChannelValid = remittersList.stream()
-                            .anyMatch(remitter -> remitter.getCodigoRemesador().equals(remitterCode));
+                            .anyMatch(remitter -> remitter.getCodigoRemesador().equals(remittanceAlgorithmResponse.getMrecod()));
 
                     if(!isChannelValid) {
                         return ResponseEntity.ok(
@@ -173,7 +173,7 @@ public class ConsultaController {
 
                     // Get Remittance Data Wsdl03
                     SDTServicioVentanillaIn request03 = this.getRequest03(
-                        requestData, bank, remitterCode, channelInfo
+                        requestData, bank, remittanceAlgorithmResponse.getMrecod(), channelInfo
                     );
                     Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
                     if(!this.utilService.isResponseSuccess(wsdl03Response)) {
@@ -189,6 +189,8 @@ public class ConsultaController {
                             this.utilService.getCustomMessageCode("V30201") // remittance data not found
                         );
                     }
+
+                    //Validaciones de canal
 
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
                     responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());

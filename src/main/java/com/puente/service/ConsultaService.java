@@ -1,5 +1,6 @@
 package com.puente.service;
 
+import com.puente.service.dto.RemittanceAlgorithmDto;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,8 @@ public class ConsultaService {
     private SeguridadCanalService seguridadCanalService;
     private UtilService utilService;
 
-    public String ConsultaRemesadora(String remesa){
-        return this.utilService.ConsultaRemesadora(remesa);
+    public RemittanceAlgorithmDto ConsultaRemesadora(String remesa){
+        return utilService.ConsultaRemesadora(remesa);
     }
 
     public String getPaymentType(

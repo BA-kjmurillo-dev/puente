@@ -24,12 +24,15 @@ public class ValoresGlobalesRemesasEntity {
     @Column(length = 100)
     private String valor;
 
-    @Column(length = 50)
+    @Column(length = 255)
     private String adicional1;
 
-    @Column(length = 50)
+    @Column(length = 255)
     private String adicional2;
 
-    @Column(length = 50)
+    @Column(length = 255)
     private String adicional3;
+
+    @Column(length = 255)
+    private String adicional4;
 }

@@ -1,8 +1,14 @@
 package com.puente.service;
 
 import com.puente.persistence.entity.MessageCodesEntity;
+import com.puente.persistence.entity.ParametroRemesadoraEntity;
+import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
+import com.puente.persistence.repository.ParametroRemesadoraRepository;
+import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
+import com.puente.service.dto.RemittanceAlgorithmDto;
 import com.puente.service.dto.ResponseDto;
-import com.puente.service.dto.comparacionNombreDto;
+import com.puente.service.dto.ComparacionNombreDto;
+import com.puente.web.config.MyProperties;
 import com.puente.service.dto.ResponseGetRemittanceDataDto;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp;
@@ -12,7 +18,9 @@ import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person.Name;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -32,8 +40,14 @@ public class UtilService {
     private static final Logger log = LoggerFactory.getLogger(UtilService.class);
     @Autowired
     private MessageCodesService messageCodesService;
-    private comparacionNombreDto comparacionNombreDto;
-    private static int numerico = 0;
+    private ComparacionNombreDto comparacionNombreDto;
+    @Autowired
+    private ParametroRemesadoraRepository parametroRemesadoraRepository;
+    @Autowired
+    private MyProperties myProperties;
+    @Autowired
+    ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository;
+
 
     public Boolean isResponseSuccess(ResponseDto servicesResponse) {
         return servicesResponse.getMessageCode().equals("000000");
@@ -43,11 +57,11 @@ public class UtilService {
         DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
         String internalID = businessPartnerResp.getInternalID();
         String givenName = Optional.of(businessPartnerResp)
-            .map(DTDataBusinessPartnerResp::getCommon)
-            .map(Common::getPerson)
-            .map(Person::getName)
-            .map(Name::getGivenName)
-            .orElse(null);
+                .map(DTDataBusinessPartnerResp::getCommon)
+                .map(Common::getPerson)
+                .map(Person::getName)
+                .map(Name::getGivenName)
+                .orElse(null);
         return internalID != null && givenName != null;
     }
 
@@ -65,11 +79,11 @@ public class UtilService {
     }
 
     public ResponseGetRemittanceDataDto getFormattedMessageCode(
-        ResponseGetRemittanceDataDto servicesResponse
+            ResponseGetRemittanceDataDto servicesResponse
     ) {
         MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getMessageCode());
         ResponseGetRemittanceDataDto formattedResponse = new ResponseGetRemittanceDataDto();
-        if(messageCode == null || messageCode.getMessage() == null) {
+        if (messageCode == null || messageCode.getMessage() == null) {
             formattedResponse.setMessage(servicesResponse.getMessage());
             formattedResponse.setMessageCode(servicesResponse.getMessageCode());
         } else {
@@ -104,43 +118,70 @@ public class UtilService {
     }
 
     //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
-    public String ConsultaRemesadora(String remesa){
+    public RemittanceAlgorithmDto ConsultaRemesadora(String remesa) {
         int cantidad = 0;
-        int numerico = 0;
         String rem = "";
-
-        if (remesa == null){
+        RemittanceAlgorithmDto resp = new RemittanceAlgorithmDto();
+        ParametroRemesadoraEntity parametro;
+        List<ParametroRemesadoraEntity> parametros = new ArrayList<ParametroRemesadoraEntity>();
+        parametros = parametroRemesadoraRepository.findAll();
+        if (remesa == null) {
             throw new IllegalArgumentException("Remesa no puede ser null");
-        }
-        else {
+        } else {
             cantidad = remesa.trim().length();
-            rem = busMg(cantidad, remesa);
+            //rem = busMg(cantidad, remesa,, myProperties.getNumeroMG());
+            rem = "";//MoneyGram aun no se implementa
             if (rem.isEmpty()) {
-                rem = busVigo(cantidad, remesa);
+                parametro = getParametrosMrecod(parametros, myProperties.getNumeroVigo());
+                rem = busVigo(cantidad, remesa, parametro);
                 if (rem.isEmpty()) {
-                    rem = busUni(cantidad, remesa);
+                    parametro = getParametrosMrecod(parametros, myProperties.getNumeroUni());
+                    rem = busUni(cantidad, remesa, parametro);
                     if (rem.isEmpty()) {
-                        rem = busRia(cantidad, remesa);
+                        parametro = getParametrosMrecod(parametros, myProperties.getNumeroRia());
+                        rem = busRia(cantidad, remesa, parametro);
                         if (rem.isEmpty()) {
-                            rem = busBTS(cantidad, remesa);
+                            parametro = getParametrosMrecod(parametros, myProperties.getNumeroBts());
+                            rem = busBTS(cantidad, remesa, parametro);
                             if (rem.isEmpty()) {
-                              rem = "error";
+                                rem = "false";
                             }
                         }
                     }
                 }
             }
         }
-        return rem;
+        resp.setMessage("true");
+        resp.setMrecod(rem);
+        return resp;
     }
 
-    private String busMg(int cantidad, String argumento) {
-        int MRELMA = 8;
-        char MRETDA = 'N';
+
+    private ParametroRemesadoraEntity getParametrosMrecod(List<ParametroRemesadoraEntity> parametros, String mrecod) {
+        ParametroRemesadoraEntity lista = new ParametroRemesadoraEntity();
+        for (ParametroRemesadoraEntity parametro : parametros) {
+            if (parametro.getMrecod().equals(mrecod)) {
+                lista.setMrecod(parametro.getMrecod());
+                lista.setCorval(parametro.getCorval());
+                lista.setLongMax(parametro.getLongMax());
+                lista.setLongMin(parametro.getLongMin());
+                lista.setInicio(parametro.getInicio());
+                lista.setTipoDato(parametro.getTipoDato());
+            }
+        }
+        return lista;
+    }
+
+    private String busMg(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
+        int MRELMA = Integer.parseInt(parametro.getLongMax());
+        String MRETDA = parametro.getTipoDato();
+        String MREINI = parametro.getInicio();
+        //int MRELMA = 8;
+        //char MRETDA = 'N';
 
         if (cantidad == MRELMA) {
-            if (MRETDA == 'N') {
-                if (validaNumerico(argumento, cantidad)) {
+            if (MRETDA.equals("N")) {
+                if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                     return "000006";
                 }
             } else {
@@ -150,15 +191,18 @@ public class UtilService {
         return "";
     }
 
-    private String busVigo(int cantidad, String argumento) {
-        int MRELMA = 10;
-        char MRETDA = 'N';
-        String MREINI = "9";
+    private String busVigo(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
+        int MRELMA = Integer.parseInt(parametro.getLongMax());
+        String MRETDA = parametro.getTipoDato();
+        String MREINI = parametro.getInicio();
+        //int MRELMA = 10;
+        //char MRETDA = 'N';
+        //String MREINI = "9";
 
         if (cantidad == MRELMA) {
             if ((MREINI + "72").equals(argumento.substring(0, 3)) || (MREINI + "73").equals(argumento.substring(0, 3))) {
-                if (MRETDA == 'N') {
-                    if (validaNumerico(argumento, cantidad)) {
+                if (MRETDA.equals("N")) {
+                    if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000004";
                     }
                 } else {
@@ -169,15 +213,18 @@ public class UtilService {
         return "";
     }
 
-    private String busUni(int cantidad, String argumento) {
-        int MRELMA = 10;
-        char MRETDA = 'N';
-        String MREINI = "5";
+    private String busUni(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
+        int MRELMA = Integer.parseInt(parametro.getLongMax());
+        String MRETDA = parametro.getTipoDato();
+        String MREINI = parametro.getInicio();
+        //int MRELMA = 10;
+        //char MRETDA = 'N';
+        //String MREINI = "5";
 
         if (cantidad == MRELMA) {
             if (MREINI.equals(String.valueOf(argumento.charAt(0)))) {
-                if (MRETDA == 'N') {
-                    if (validaNumerico(argumento, cantidad)) {
+                if (MRETDA.equals("N")) {
+                    if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000007";
                     }
                 } else {
@@ -188,18 +235,23 @@ public class UtilService {
         return "";
     }
 
-    private String busRia(int cantidad, String argumento) {
-        int MRELMA = 11;
-        char MRETDA = 'N';
-        String MREINI = "1";
-
-        String numCorrelativo1 = "2";
-        String numCorrelativo2 = "3";
+    private String busRia(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
+        int MRELMA = Integer.parseInt(parametro.getLongMax());
+        String MRETDA = parametro.getTipoDato();
+        String MREINI = parametro.getInicio();
+        //int MRELMA = 11;
+        //char MRETDA = 'N';
+        //String MREINI = "1";
+        List<ValoresGlobalesRemesasEntity> lista = valoresGlobalesRemesasRepository.findByItem("000018NC");
+        String numCorrelativo1 = lista.get(0).getValor();
+        String numCorrelativo2 = lista.get(1).getValor();
+        //String numCorrelativo1 = "2";
+        //String numCorrelativo2 = "3";
 
         if (cantidad == MRELMA) {
             if ((MREINI + numCorrelativo1).equals(argumento.substring(0, 2)) || (MREINI + numCorrelativo2).equals(argumento.substring(0, 2))) {
-                if (MRETDA == 'N') {
-                    if (validaNumerico(argumento, cantidad)) {
+                if (MRETDA.equals("N")) {
+                    if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000018";
                     }
                 }
@@ -208,11 +260,12 @@ public class UtilService {
         return "";
     }
 
-    private String busBTS(int cantidad, String argumento) {
-        int MRELMA = 11;
+    private String busBTS(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
+        int MRELMA = Integer.parseInt(parametro.getLongMax());
+        //int MRELMA = 11;
 
         if (cantidad == MRELMA) {
-            if (validaNumerico(argumento, cantidad)) {
+            if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                 boolean banBts = PVerBTS(argumento);
                 if (banBts) {
                     return "000016";
@@ -222,22 +275,21 @@ public class UtilService {
         return "";
     }
 
-    private boolean validaNumerico(String argumento, int cantidad) {
-        for (int i = 0; i < cantidad; i++) {
-            char c = argumento.charAt(i);
-            if (c < '0' || c > '9') {
-                return false;
+    private boolean validaNumerico(String argumento, int cantidad, String minimo) {
+        boolean ban = true;
+        if (argumento.length() == Integer.parseInt(minimo)) {
+            for (int i = 0; i < cantidad; i++) {
+                char c = argumento.charAt(i);
+                if (c < '0' || c > '9') {
+                    ban = false;
+                }
             }
         }
-        return true;
+        return ban;
     }
+
     public boolean PVerBTS(String remCod) {
         String mrEcod = "000016";
-        String mrEsts = "A";  // Dato estático
-        if (!"A".equals(mrEsts)) {
-            return false;
-        }
-
         if (remCod.length() != 11 && remCod.length() != 10) {
             return false;
         }
@@ -268,9 +320,9 @@ public class UtilService {
     public static String normalize(String name) {
         String normalized = Normalizer.normalize(name, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        String respult = pattern.matcher(normalized).replaceAll("").toLowerCase().replaceAll("\\s+", " ").trim();
-        return respult;
+        return pattern.matcher(normalized).replaceAll("").toLowerCase().replaceAll("\\s+", " ").trim();
     }
+
     //Jaccard
     public static double calculateJaccardSimilarity(String s1, String s2, int n) {
         Set<String> nGrams1 = generateNGrams(s1, n);
@@ -284,6 +336,7 @@ public class UtilService {
 
         return (double) intersection.size() / union.size();
     }
+
     //Jaccard
     private static Set<String> generateNGrams(String s, int n) {
         Set<String> nGrams = new HashSet<>();
@@ -295,9 +348,9 @@ public class UtilService {
 
     //JaroWinkler
     public static double jaroWinklerSimilarity(String s1, String s2) {
-        if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;;
+        if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;
+
         if ((s1 == null || s1.isEmpty()) || (s2 == null || s2.isEmpty())) return 0.0;
-        numerico ++;
         s1 = normalize(s1);
         s2 = normalize(s2);
         int s1_len = s1.length();
@@ -371,11 +424,26 @@ public class UtilService {
         return (double) scoreMatrix[len1][len2] / maxScore;
     }
 
-    public static double calcularSimilaridad(comparacionNombreDto comparacionNombreDto) {
+    public boolean CompararNombre(ComparacionNombreDto comparacionNombreDto,String mrecod) {
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas = valoresGlobalesRemesasRepository.findByCodigoAndItem("ComparacionNombres", "algoritmo");
+        boolean canCharge = false;
+        if (valoresGlobalesRemesas.getValor().equals("1")) {
+            canCharge = calcularSimilaridad(comparacionNombreDto,mrecod);
+        } else if (valoresGlobalesRemesas.getValor().equals("2")) {
+            canCharge = CompararNombreSiremu(comparacionNombreDto,mrecod);
+        }else {
+            canCharge = true;
+        }
 
+        return canCharge;
+    }
+
+    public boolean calcularSimilaridad(ComparacionNombreDto comparacionNombreDto,String mrecod) {
+
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem(mrecod, "remesadora");
+        double umbral = Double.parseDouble(valoresGlobalesRemesas2.getValor());
+        boolean canCharge = false;
         double similitudTotal = 0;
-        double similitudTotalL = 0;
-        double similitudTotalJW = 0;
 
         double similitudBp1 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
         double similutudS1 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
@@ -390,11 +458,13 @@ public class UtilService {
         double similutudS4 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
 
 
+        similitudTotal = (( similitudBp1 + similutudS1 + similitudBp2 + similutudS2 + similitudBp3 + similutudS3 + similitudBp4 + similutudS4)*100) / 8;
 
-        similitudTotal = (similitudBp1 + similutudS1 + similitudBp2 + similutudS2 + similitudBp3 + similutudS3 + similitudBp4 + similutudS4) / 8;
+        if (similitudTotal >= umbral) {
+            canCharge= true;
+        }
 
-
-        return similitudTotal;
+        return canCharge;
     }
 
     //Levenshtein
@@ -411,6 +481,7 @@ public class UtilService {
 
         return total / resultaComparaciones;
     }
+
     //Levenshtein
     public static int computeLevenshteinDistance(String s1, String s2) {
         int[][] dp = new int[s1.length() + 1][s2.length() + 1];
@@ -433,9 +504,9 @@ public class UtilService {
 
         return dp[s1.length()][s2.length()];
     }
+
     //Levenshtein
     public static double Levenshtein(String s1, String s2) {
-
 
         if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;
         if ((s1 == null || s1.isEmpty()) || (s2 == null || s2.isEmpty())) return 0.0;
@@ -443,6 +514,91 @@ public class UtilService {
 
         s1 = normalize(s1);
         s2 = normalize(s2);
-        return (1.0 - ((double) computeLevenshteinDistance(s1, s2) / maxLen));
+        double resp =(1.0 - ((double) computeLevenshteinDistance(s1, s2) / maxLen));
+        return resp;
+
+    }
+
+    public boolean CompararNombreSiremu(ComparacionNombreDto comparacionNombreDto, String mrecod) {
+
+        //Normalizar los nomrebres
+        String pnBp = (comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp()).trim();
+        String pnS = (comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon()).trim();
+        String snBp = (comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp()).trim();
+        String snS = (comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon()).trim();
+        String paBp = (comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp()).trim();
+        String paS = (comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon()).trim();
+        String saBp = (comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp()).trim();
+        String saS = (comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon()).trim();
+
+        ComparacionNombreDto NombreNormalizado = new ComparacionNombreDto();
+        ComparacionNombreDto.beneficiarioBp BeneficiarioBp = new ComparacionNombreDto.beneficiarioBp();
+        ComparacionNombreDto.beneficiarioSireon BeneficiarioSireon = new ComparacionNombreDto.beneficiarioSireon();
+
+        BeneficiarioBp.setPrimerNombreBp(pnBp);
+        BeneficiarioBp.setSegundoNombreBp(snBp);
+        BeneficiarioBp.setPrimerApellidoBp(paBp);
+        BeneficiarioBp.setSegundoApellidoBp(saBp);
+
+        BeneficiarioSireon.setPrimerNombreSireon(pnS);
+        BeneficiarioSireon.setSegundoNombreSireon(snS);
+        BeneficiarioSireon.setPrimerApellidoSireon(paS);
+        BeneficiarioSireon.setSegundoApellidoSireon(saS);
+
+        NombreNormalizado.setBeneficiarioBp(BeneficiarioBp);
+        NombreNormalizado.setBeneficiarioSireon(BeneficiarioSireon);
+
+        String nombreBen = (pnBp + " " + snBp + " " + paBp + " " + saBp).trim();
+        String nombreBeneficiario = (pnS + " " + snS + " " + paS + " " + saS).trim();
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem(mrecod, "remesadora");
+        Double umbral = Double.parseDouble(valoresGlobalesRemesas2.getValor());
+        if (!nombreBen.equals(nombreBeneficiario)) {
+            if (!nombreBen.trim().isEmpty() && !nombreBeneficiario.trim().isEmpty()) {
+                boolean valNom = ValidaNombreBp(BeneficiarioBp, BeneficiarioSireon,umbral);
+                if (!valNom) {
+                    valNom = ValidaNombreSireon(BeneficiarioSireon, BeneficiarioBp,umbral);
+                    return valNom;
+                } else {
+                    return true;
+                }
+            }
+        } else {
+            return true;
+        }
+
+        return true;
+    }
+
+    private static boolean ValidaNombreBp(ComparacionNombreDto.beneficiarioBp beneficiarioBp, ComparacionNombreDto.beneficiarioSireon beneficiarioSireon,Double umbral) {
+        int porcentaje = 0;
+        String[] nombresBp = {beneficiarioBp.getPrimerNombreBp(), beneficiarioBp.getSegundoNombreBp(), beneficiarioBp.getPrimerApellidoBp(), beneficiarioBp.getSegundoApellidoBp()};
+        String[] nombreSireon = {beneficiarioSireon.getPrimerNombreSireon(), beneficiarioSireon.getSegundoNombreSireon(), beneficiarioSireon.getPrimerApellidoSireon(),
+                beneficiarioSireon.getSegundoApellidoSireon()};
+        for(String nombreBp : nombresBp){
+
+            porcentaje += calcularPorcentaje(nombreBp, nombreSireon);
+        }
+        return porcentaje >= umbral;
+    }
+
+    private static boolean ValidaNombreSireon(ComparacionNombreDto.beneficiarioSireon beneficiarioSireon, ComparacionNombreDto.beneficiarioBp beneficiarioBp,Double umbral) {
+        int porcentaje = 0;
+        String[] nombresBp = {beneficiarioBp.getPrimerNombreBp(), beneficiarioBp.getSegundoNombreBp(), beneficiarioBp.getPrimerApellidoBp(), beneficiarioBp.getSegundoApellidoBp()};
+        String[] nombresSireon = {beneficiarioSireon.getPrimerNombreSireon(), beneficiarioSireon.getSegundoNombreSireon(), beneficiarioSireon.getPrimerApellidoSireon(),
+                beneficiarioSireon.getSegundoApellidoSireon()};
+        for(String nombreSireon : nombresSireon){
+            porcentaje += calcularPorcentaje(nombreSireon, nombresBp);
+        }
+        return porcentaje >= umbral;
+
+    }
+
+    private static int calcularPorcentaje(String nombre, String[] nombres) {
+        for (String n : nombres) {
+            if (nombre.equals(n) && !nombre.equals("X") && !nombre.isEmpty()) {
+                return 25;
+            }
+        }
+        return 0;
     }
 }
