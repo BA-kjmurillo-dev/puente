@@ -1,7 +1,9 @@
 package com.puente.web.controller;
 
 import com.puente.client.WsdlBpClient;
+import com.puente.persistence.entity.ParametroRemesadoraEntity;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
+import com.puente.persistence.repository.ParametroRemesadoraRepository;
 import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
 import com.puente.service.dto.*;
 import com.soap.wsdl.service03.SDTServicioVentanillaIn;
@@ -10,12 +12,17 @@ import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.puente.service.*;
-import com.puente.service.dto.comparacionNombreDto;
+import com.puente.service.dto.ComparacionNombreDto;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
+@Profile("dev")
 @RequestMapping("/test")
 public class TestController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
@@ -28,6 +35,7 @@ public class TestController {
     private final Wsdl07Service wsdl07Service;
     private final ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository;
     private final WsdlBpClient wsdlBpClient;
+    private final ParametroRemesadoraRepository parametroRemesadoraRepository;
 
     @Autowired
     public TestController(
@@ -37,7 +45,10 @@ public class TestController {
             Wsdl03Service wsdl03Service,
             Wsdl04Service wsdl04Service,
             Wsdl05Service wsdl05Service,
-            Wsdl07Service wsdl07Service, ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository, WsdlBpClient wsdlBpClient
+            Wsdl07Service wsdl07Service,
+            ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository,
+            ParametroRemesadoraRepository parametroRemesadoraRepository,
+            WsdlBpClient wsdlBpClient 
 
     ) {
         this.consultaController = consultaController;
@@ -48,6 +59,7 @@ public class TestController {
         this.wsdl05Service = wsdl05Service;
         this.wsdl07Service = wsdl07Service;
         this.valoresGlobalesRemesasRepository = valoresGlobalesRemesasRepository;
+        this.parametroRemesadoraRepository = parametroRemesadoraRepository;
         this.wsdlBpClient = wsdlBpClient;
     }
 
@@ -60,14 +72,11 @@ public class TestController {
         remesa = remesa.replaceAll("\"", "");
         remesa = remesa.replaceAll("\\s+", "");
         log.info("Constoller remesa:"+remesa);
-        String respuesta = this.consultaService.ConsultaRemesadora(remesa);
-        if (respuesta.equals("000004") ||
-            respuesta.equals("000007") ||
-            respuesta.equals("000016") ||
-            respuesta.equals("000018")) {
-            return ResponseEntity.ok("Remesa: "+remesa+" Remesadora: "+respuesta);
-        } else if (respuesta.equals("000006")) {
-            return ResponseEntity.ok("Remesa: "+remesa+" Remesadora: "+respuesta + " Redireccion a SIREMU");
+        RemittanceAlgorithmDto respuesta = utilService.ConsultaRemesadora(remesa);
+        if (respuesta.getMessage().equals("true")) {
+            return ResponseEntity.ok("Remesa: "+remesa+" Remesadora: "+respuesta.getMrecod());
+        } else if (respuesta.getMrecod().equals("000006")) {
+            return ResponseEntity.ok("Remesa: "+remesa + " Redireccion a SIREMU");
         } else {
             return ResponseEntity.status(400).body("Error: "+remesa);
         }
@@ -76,7 +85,7 @@ public class TestController {
     @GetMapping("/wsdl03")
     public ResponseEntity<Wsdl03Dto> wsdl03Test() {
         SDTServicioVentanillaInItemRemesa sdtServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
-        sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa("202405230001");
+        sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa("12020137470");
         sdtServicioVentanillaInItemRemesa.setCodigoBanco("2000");
         sdtServicioVentanillaInItemRemesa.setCodigoRemesadora("000016");
         SDTServicioVentanillaIn request03 = new SDTServicioVentanillaIn();
@@ -118,87 +127,8 @@ public class TestController {
         RequestGetRemittanceDataDto requestData = new RequestGetRemittanceDataDto();
         requestData.setCanal(data[0]);
         requestData.setIdentificadorRemesa(data[1]);
+        requestData.setIdentificacion(data[2]);
         return this.consultaController.validateRemittance(requestData);
-    }
-
-    //Jaccard
-    @PostMapping("/diferenciaj")
-    public ResponseEntity<String> defirenciaj(@RequestBody Nombres nombres) {
-
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else{
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas1 = valoresGlobalesRemesasRepository.findByCodigoAndItem("tam", "comp");
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            int n_GRAM_SIZE = Integer.parseInt(ValoresGlobalesRemesas1.getValor());
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-
-            double similarity = this.utilService.calculateJaccardSimilarity(nombres.nombre1, nombres.nombre2,n_GRAM_SIZE)*100;
-
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge );
-            }
-
-        }
-    }
-    //JaroWinkler
-    @PostMapping("/diferenciaj2")
-    public ResponseEntity<String> defirenciaj2(@RequestBody Nombres nombres) {
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-
-            double similarity = this.utilService.jaroWinklerSimilarity(nombres.nombre1, nombres.nombre2) * 100;
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
-        }
-    }
-    //needlemanWunsch
-    @PostMapping("/diferenciaj3")
-    public ResponseEntity<String> defirenciaj3(@RequestBody Nombres nombres) {
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-            double similarity = this.utilService.needlemanWunsch(nombres.nombre1, nombres.nombre2,1,-1,-1)*100;
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
-        }
-    }
-    //Levenshtein
-    @PostMapping("/diferenciaj4")
-    public ResponseEntity<String> defirenciaj4(@RequestBody Nombres nombres) {
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-            double similarity = this.utilService.calculaNombreSpearados(nombres.nombre1, nombres.nombre2);
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
-        }
     }
 
     @GetMapping("/wsdlbp/{idNumber}")
@@ -206,43 +136,39 @@ public class TestController {
         return ResponseEntity.ok(wsdlBpClient.getResponse(idNumber));
     }
 
-    @PostMapping("/diferenciaj5")
-    public ResponseEntity<String> defirenciaj5(@RequestBody Nombres nombres) {
+    public static class DefirenciajRequest {
+        public ComparacionNombreDto nombres;
+        public String mrecod;
+    }
+
+    @PostMapping("/compararNombre")
+    public ResponseEntity<String> compararNombre(@RequestBody DefirenciajRequest defirenciajRequest) {
+        ComparacionNombreDto nombres = defirenciajRequest.nombres;
+        String mrecod = defirenciajRequest.mrecod;
         if (nombres == null){
             log.error("Nombres no puede ser null");
             throw new IllegalArgumentException("Nombres no puede ser null");
         }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-            double similarity1 = this.utilService.calculaNombreSpearados(nombres.nombre1, nombres.nombre2);
-            double similarity2 = this.utilService.jaroWinklerSimilarity(nombres.nombre1, nombres.nombre2) ;
-            double jw_weight=0.7;
-            double similarity = ((jw_weight*similarity2)+((1-jw_weight)*(similarity1)))*100;
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
+            boolean similarity = this.utilService.CompararNombre(nombres,mrecod);
+            if (similarity) {
+                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + similarity);
             }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
+                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + similarity);
             }
         }
     }
 
-    @PostMapping("/diferenciaj6")
-    public ResponseEntity<String> defirenciaj6(@RequestBody comparacionNombreDto nombres) {
-
-        if (nombres == null){
-            log.error("Nombres no puede ser null");
-            throw new IllegalArgumentException("Nombres no puede ser null");
-        }else {
-            ValoresGlobalesRemesasEntity ValoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem("remesadora", "000016");
-            double THRESHOLD = Double.parseDouble(ValoresGlobalesRemesas2.getValor());
-            double similarity = this.utilService.calcularSimilaridad(nombres)*100;
-            boolean canCharge = similarity >= THRESHOLD;
-            if (canCharge) {
-                return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + canCharge);
-            }else {
-                return ResponseEntity.status(400).body("Similarity: " + similarity + " canCharge: " + canCharge);
-            }
+    @PostMapping("parametros")
+    public ResponseEntity<List<ParametroRemesadoraEntity>> getParametros() {
+        List<ParametroRemesadoraEntity> list = new ArrayList<ParametroRemesadoraEntity>();
+        list = parametroRemesadoraRepository.findAll();
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
         }
+
+        return ResponseEntity.ok(list);
     }
+
+
+
 }

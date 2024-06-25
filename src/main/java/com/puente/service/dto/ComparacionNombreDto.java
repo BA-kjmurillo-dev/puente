@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class comparacionNombreDto {
+public class ComparacionNombreDto {
 
     private beneficiarioBp beneficiarioBp;
     private beneficiarioSireon beneficiarioSireon;
