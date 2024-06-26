@@ -144,15 +144,18 @@ public class UtilService {
                             parametro = getParametrosMrecod(parametros, myProperties.getNumeroBts());
                             rem = busBTS(cantidad, remesa, parametro);
                             if (rem.isEmpty()) {
-                                rem = "false";
+                                resp.setMessage("false");
+                                resp.setMrecod("false");
+                            }else{
+                                resp.setMessage("true");
+                                resp.setMrecod(rem);
                             }
                         }
                     }
                 }
             }
         }
-        resp.setMessage("true");
-        resp.setMrecod(rem);
+
         return resp;
     }
 
