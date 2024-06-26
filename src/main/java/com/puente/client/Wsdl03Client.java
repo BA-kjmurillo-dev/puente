@@ -1,6 +1,5 @@
 package com.puente.client;
 
-import com.puente.service.dto.RequestGetRemittanceDataDto;
 import com.puente.web.config.MyProperties;
 import com.soap.wsdl.service03.*;
 import org.slf4j.Logger;
@@ -24,19 +23,97 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
         credentials.setServicesToken("");
 
         //Ventanilla In
-        SDTServicioVentanillaIn SDTServicioVentanillaIn = new SDTServicioVentanillaIn();
-        SDTServicioVentanillaIn.setOperacion("Consulta");
-        SDTServicioVentanillaIn.setCanal(request03.getCanal());
+        SDTServicioVentanillaIn ventanillaIn = new SDTServicioVentanillaIn();
+        ventanillaIn.setOperacion("Consulta");
+        ventanillaIn.setCanal(request03.getCanal());
 
         //Item Remesa
-        SDTServicioVentanillaInItemRemesa SDTServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
-        SDTServicioVentanillaInItemRemesa.setCodigoBanco(request03.getItemRemesa().getCodigoBanco());
-        SDTServicioVentanillaInItemRemesa.setCodigoRemesadora(request03.getItemRemesa().getCodigoRemesadora());
-        SDTServicioVentanillaInItemRemesa.setIdentificadorRemesa(request03.getItemRemesa().getIdentificadorRemesa());
+        SDTServicioVentanillaInItemRemesa itemRemesa = new SDTServicioVentanillaInItemRemesa();
+        itemRemesa.setCodigoBanco(request03.getItemRemesa().getCodigoBanco());
+        itemRemesa.setCodigoRemesadora(request03.getItemRemesa().getCodigoRemesadora());
+        itemRemesa.setIdentificadorRemesa(request03.getItemRemesa().getIdentificadorRemesa());
 
-        SDTServicioVentanillaIn.setItemRemesa(SDTServicioVentanillaInItemRemesa);
+        ventanillaIn.setItemRemesa(itemRemesa);
 
         //Request
+        return this.servicesrequest003(credentials, ventanillaIn);
+    }
+
+    public WSSIREON003SERVICIOVENTANILLAResponse payRemittance(
+        SDTServicioVentanillaIn request03
+    ) {
+        //Credentials
+        ServicesCredentials credentials = new ServicesCredentials();
+        credentials.setServicesUser(myProperties.getServicesUser());
+        credentials.setServicesPassword(myProperties.getServicesPassword());
+        credentials.setServicesToken("");
+
+        //Ventanilla In
+        SDTServicioVentanillaIn ventanillaIn = new SDTServicioVentanillaIn();
+        ventanillaIn.setOperacion("Pago");
+        ventanillaIn.setCanal(request03.getCanal());
+        ventanillaIn.setDescriptorCanal(""); // No required
+        ventanillaIn.setAgenciaPago(request03.getAgenciaPago());
+        ventanillaIn.setDescriptorAgenciaPago(""); // No required
+        ventanillaIn.setSucursalPago(request03.getSucursalPago());
+        ventanillaIn.setDescriptorSucursalPago(""); // No required
+        ventanillaIn.setCajero(request03.getCajero());
+
+        //Item Remesa
+        SDTServicioVentanillaInItemRemesa itemRemesa = new SDTServicioVentanillaInItemRemesa();
+        itemRemesa.setCodigoBanco(request03.getItemRemesa().getCodigoBanco());
+        itemRemesa.setCodigoRemesadora(request03.getItemRemesa().getCodigoRemesadora());
+        itemRemesa.setIdentificadorRemesa(request03.getItemRemesa().getIdentificadorRemesa());
+        itemRemesa.setMotivoRemesa(request03.getItemRemesa().getMotivoRemesa());
+        itemRemesa.setTipoFormaPago(request03.getItemRemesa().getTipoFormaPago());
+        itemRemesa.setCuentaDeposito(""); // No required
+
+        //Beneficiary
+        SDTServicioVentanillaInItemRemesaBeneficiario beneficiaryData = request03.getItemRemesa().getBeneficiario();
+        SDTServicioVentanillaInItemRemesaBeneficiario itemRemesaBeneficiary = new SDTServicioVentanillaInItemRemesaBeneficiario();
+        itemRemesaBeneficiary.setIdentificacion(beneficiaryData.getIdentificacion());
+        itemRemesaBeneficiary.setTipoIdentificacion(beneficiaryData.getTipoIdentificacion());
+        itemRemesaBeneficiary.setNombreCompleto(beneficiaryData.getNombreCompleto());
+        itemRemesaBeneficiary.setPrimerNombre(beneficiaryData.getPrimerNombre());
+        itemRemesaBeneficiary.setSegundoNombre(beneficiaryData.getSegundoNombre());
+        itemRemesaBeneficiary.setPrimerApellido(beneficiaryData.getPrimerApellido());
+        itemRemesaBeneficiary.setSegundoApellido(beneficiaryData.getSegundoApellido());
+        itemRemesaBeneficiary.setFechaEmisionIdentificacion(beneficiaryData.getFechaEmisionIdentificacion());
+        itemRemesaBeneficiary.setFechaVencimientoIdentificacion(beneficiaryData.getFechaEmisionIdentificacion());
+        itemRemesaBeneficiary.setPaisResidencia(beneficiaryData.getPaisResidencia());
+        itemRemesaBeneficiary.setDescriptorPaisResidencia(""); // No required
+        itemRemesaBeneficiary.setDepartamentoResidencia(beneficiaryData.getDepartamentoResidencia());
+        itemRemesaBeneficiary.setDescriptorDepaResidencia(""); // No required
+        itemRemesaBeneficiary.setMunicipioResidencia(""); // No required
+        itemRemesaBeneficiary.setDescriptorMuniResidencia(""); // No required
+        itemRemesaBeneficiary.setCiudadResidencia(beneficiaryData.getCiudadResidencia());
+        itemRemesaBeneficiary.setDireccionResidencia(beneficiaryData.getDireccionResidencia());
+        itemRemesaBeneficiary.setTelefonoContacto(""); // No required
+        itemRemesaBeneficiary.setCelularContacto(beneficiaryData.getCelularContacto());
+        itemRemesaBeneficiary.setEmailContacto(""); // No required
+        itemRemesaBeneficiary.setGenero(""); // No required
+        itemRemesaBeneficiary.setFechaNacimiento(beneficiaryData.getFechaNacimiento());
+        itemRemesaBeneficiary.setCodigoNacionalidad(beneficiaryData.getCodigoNacionalidad());
+        itemRemesaBeneficiary.setDescriptorNacionalidad(""); // No required
+        itemRemesaBeneficiary.setCodigoEstadoCivil(beneficiaryData.getCodigoEstadoCivil());
+        itemRemesaBeneficiary.setDescriptorEstadoCivil(beneficiaryData.getDescriptorEstadoCivil());
+        itemRemesaBeneficiary.setCodigoOcupacion(beneficiaryData.getCodigoOcupacion());
+        itemRemesaBeneficiary.setDescriptorOcupacion(""); // No required
+        itemRemesaBeneficiary.setCodigoRelacionRemitente(beneficiaryData.getCodigoRelacionRemitente());
+        itemRemesaBeneficiary.setDescriptorRelacionRemitente(""); // No required
+
+        itemRemesa.setBeneficiario(itemRemesaBeneficiary);
+
+        ventanillaIn.setItemRemesa(itemRemesa);
+
+        //Request
+        return this.servicesrequest003(credentials, ventanillaIn);
+    }
+
+    public WSSIREON003SERVICIOVENTANILLAResponse servicesrequest003(
+        ServicesCredentials credentials,
+        SDTServicioVentanillaIn SDTServicioVentanillaIn
+    ) {
         ServicesRequest003 servicesrequest003 = new ServicesRequest003();
         servicesrequest003.setServicesCredentials(credentials);
         servicesrequest003.setVentanilla(SDTServicioVentanillaIn);
@@ -49,11 +126,10 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
         System.out.println(servicesrequest003);
         SoapActionCallback callback = new SoapActionCallback(url);
         //Response
-        WSSIREON003SERVICIOVENTANILLAResponse response = (WSSIREON003SERVICIOVENTANILLAResponse) getWebServiceTemplate().marshalSendAndReceive(
+        return (WSSIREON003SERVICIOVENTANILLAResponse) getWebServiceTemplate().marshalSendAndReceive(
             url,
             WSSIREON003,
             callback
         );
-        return response;
     }
 }

@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authz)->authz
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/consulta").permitAll()
+                                .requestMatchers("/pago").permitAll()
                                 .requestMatchers("/test/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/valores/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "CUSTOMER")

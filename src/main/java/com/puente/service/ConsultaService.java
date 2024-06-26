@@ -20,13 +20,4 @@ public class ConsultaService {
     public RemittanceAlgorithmDto ConsultaRemesadora(String remesa){
         return utilService.ConsultaRemesadora(remesa);
     }
-
-    public String getPaymentType(
-        String paymentMethod
-    ) {
-        Map<String, String> keyValueMap = new HashMap<>();
-        keyValueMap.put("01", "CASH");
-        keyValueMap.put("02", "DEPOSIT_ACCOUNT");
-        return keyValueMap.get(paymentMethod) == null ? "CASH" : keyValueMap.get(paymentMethod);
-    }
 }
