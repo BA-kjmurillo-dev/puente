@@ -15,14 +15,17 @@ import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person.Name;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Identification;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.AddressInformation;
+import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.AddressInformation.AddressUsage;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Optional;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.text.Normalizer;
@@ -30,6 +33,10 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 @Service
 @ToString
@@ -57,12 +64,68 @@ public class UtilService {
         DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
         String internalID = businessPartnerResp.getInternalID();
         String givenName = Optional.of(businessPartnerResp)
-                .map(DTDataBusinessPartnerResp::getCommon)
-                .map(Common::getPerson)
-                .map(Person::getName)
-                .map(Name::getGivenName)
-                .orElse(null);
+            .map(DTDataBusinessPartnerResp::getCommon)
+            .map(Common::getPerson)
+            .map(Person::getName)
+            .map(Name::getGivenName)
+            .orElse(null);
         return internalID != null && givenName != null;
+    }
+
+    public Person getBpBeneficiaryInfo(DTCreaBusinessPartnerResp bpInfo) {
+        DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
+        Person beneficiary = Optional.of(businessPartnerResp)
+            .map(DTDataBusinessPartnerResp::getCommon)
+            .map(Common::getPerson)
+            .orElse(null);
+        return beneficiary;
+    }
+
+    public Identification getBpIdentificationInfo(DTCreaBusinessPartnerResp bpInfo) {
+        DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
+        Identification idetification = businessPartnerResp.getIdentification().stream().findFirst().orElse(null);
+        return idetification;
+    }
+
+    public AddressUsage getBpAddressInfo(DTCreaBusinessPartnerResp bpInfo) {
+        DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
+        AddressInformation addressInformation = businessPartnerResp.getAddressInformation().stream().findFirst().orElse(null);
+        return addressInformation.getAddressUsage().stream().findFirst().orElse(null);
+    }
+
+    public String getFullName(Person beneficiaryInfo) {
+        Name names = beneficiaryInfo.getName();
+        ArrayList<String> namesList = new ArrayList<>();
+        if(names.getGivenName() != null && !names.getGivenName().trim().isEmpty()) {
+            namesList.add(names.getGivenName());
+        }
+        if(names.getMiddleName() != null && !names.getMiddleName().trim().isEmpty()) {
+            namesList.add(names.getMiddleName());
+        }
+        if(names.getFamilyName() != null && !names.getFamilyName().trim().isEmpty()) {
+            namesList.add(names.getFamilyName());
+        }
+        if(names.getAdditionalFamilyName() != null && !names.getAdditionalFamilyName().trim().isEmpty()) {
+            namesList.add(names.getAdditionalFamilyName());
+        }
+        return String.join(" ", namesList);
+    }
+
+    public String getPaymentType(
+            String paymentMethod
+    ) {
+        Map<String, String> keyValueMap = new HashMap<>();
+        keyValueMap.put("01", "CASH");
+        keyValueMap.put("02", "DEPOSIT_ACCOUNT");
+        return keyValueMap.get(paymentMethod) == null ? "CASH" : keyValueMap.get(paymentMethod);
+    }
+
+    public XMLGregorianCalendar getXmlFormattedDate(String date) throws DatatypeConfigurationException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate localDate = LocalDate.parse(date, formatter);
+
+        GregorianCalendar gregorianCalendar = GregorianCalendar.from(localDate.atStartOfDay(java.time.ZoneId.systemDefault()));
+        return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
     }
 
     public ResponseGetRemittanceDataDto getCustomMessageCode(String code) {

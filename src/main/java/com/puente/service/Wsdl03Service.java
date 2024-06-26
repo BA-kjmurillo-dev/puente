@@ -26,4 +26,15 @@ public class Wsdl03Service {
         response.setData(itemRemesa);
         return response;
     }
+
+    public Wsdl03Dto payRemittance (SDTServicioVentanillaIn request03) {
+        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.payRemittance(request03);
+        ServicesResponse servicesResponse = wsdl03Response.getServicesresponse003().getVentanilla().getServicesResponse();
+        SDTServicioVentanillaOutItemRemesa itemRemesa = wsdl03Response.getServicesresponse003().getVentanilla().getItemRemesa();
+        Wsdl03Dto response = new Wsdl03Dto();
+        response.setMessage(servicesResponse.getMessage());
+        response.setMessageCode(servicesResponse.getMessageCode());
+        response.setData(itemRemesa);
+        return response;
+    }
 }
