@@ -169,6 +169,8 @@ public class TestController {
         return ResponseEntity.ok(list);
     }
 
-
-
+    @PostMapping("/wsdlbp")
+    public ResponseEntity<?> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
+        return ResponseEntity.ok(wsdlBpClient.getResponseCreateBp(datosBpDto));
+    }
 }
