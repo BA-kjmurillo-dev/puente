@@ -29,7 +29,7 @@ public class WsdlBpConfig {
         //client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/dir/wsdl?p=ic/6518edb3378632a48ae14890ca9b5a38");
         client.setMarshaller(marshallerBP);
         client.setUnmarshaller(marshallerBP);
-        //client.setInterceptors(clientInterceptors());
+        client.setInterceptors(clientInterceptors());
         return client;
     }
 }

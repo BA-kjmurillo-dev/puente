@@ -24,4 +24,13 @@ public class CreaBpProperties {
 
     @Value("${wsBp.url}")
     private String url;
+
+    @Value("${wsBp.actionR}")
+    private String actionR;
+
+    @Value("${wsBp.actionI}")
+    private String actionI;
+
+    @Value("${wsBp.SenderBusinessSystemID}")
+    private String SenderBusinessSystemID;
 }
