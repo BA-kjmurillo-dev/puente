@@ -67,6 +67,7 @@ public class ConsultaController {
             // get channel information
             SeguridadCanalEntity channelInfo = this.seguridadCanalService.findBychannelCode(requestData.getCanal());
             ValoresGlobalesRemesasEntity bank = valoresGlobalesService.findByCodeAndItem( "01", "bank");
+
             if(channelInfo == null) {
                 return ResponseEntity.ok(
                     this.utilService.getCustomMessageCode("ERROR01") // channel is not parameterized
@@ -146,7 +147,8 @@ public class ConsultaController {
                     // get BP info
                     DTCreaBusinessPartnerResp bpInfo = this.wsdlBpService.getBpInfo(requestData.getIdentificacion());
                     boolean existBp = this.utilService.existBp(bpInfo);
-                    boolean isJteller = channelInfo.getCanal().equals("jteller");
+
+                    boolean isJteller = channelInfo.getCanal().equals("JTELLER");
                     if(!existBp) {
                         if(!isJteller) {
                             return ResponseEntity.ok(
@@ -192,6 +194,20 @@ public class ConsultaController {
                     }
 
                     //Validaciones de canal
+
+                    ValidacionCanalDto dataCompleta = new ValidacionCanalDto();
+                    dataCompleta.setExisteBp(existBp);
+                    dataCompleta.setItemRemesa(wsdl03Response.getData());
+                    dataCompleta.setBpInfo(bpInfo);
+                    dataCompleta.setCanal(channelInfo);
+                    String codeValidation = this.consultaService.validacionCanalConsulta(dataCompleta);
+
+                    if (!codeValidation.equals("000000")) {
+                        //this.utilService.getCustomMessageCode("000030");
+                        return ResponseEntity.ok(
+                                this.utilService.getCustomMessageCode("000030") // remittance data not found
+                        );
+                    }
 
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
                     responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
