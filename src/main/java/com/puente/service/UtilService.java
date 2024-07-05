@@ -3,8 +3,6 @@ package com.puente.service;
 import com.puente.persistence.entity.MessageCodesEntity;
 import com.puente.persistence.entity.ParametroRemesadoraEntity;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
-import com.puente.persistence.repository.ParametroRemesadoraRepository;
-import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
 import com.puente.service.dto.RemittanceAlgorithmDto;
 import com.puente.service.dto.ResponseDto;
 import com.puente.service.dto.ComparacionNombreDto;
@@ -49,11 +47,11 @@ public class UtilService {
     private MessageCodesService messageCodesService;
     private ComparacionNombreDto comparacionNombreDto;
     @Autowired
-    private ParametroRemesadoraRepository parametroRemesadoraRepository;
+    private ParametroRemesadoraService parametroRemesadoraService;
     @Autowired
     private MyProperties myProperties;
     @Autowired
-    ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository;
+    ValoresGlobalesRemesasService valoresGlobalesRemesasService;
 
 
     public Boolean isResponseSuccess(ResponseDto servicesResponse) {
@@ -187,12 +185,12 @@ public class UtilService {
         RemittanceAlgorithmDto resp = new RemittanceAlgorithmDto();
         ParametroRemesadoraEntity parametro;
         List<ParametroRemesadoraEntity> parametros = new ArrayList<ParametroRemesadoraEntity>();
-        parametros = parametroRemesadoraRepository.findAll();
+        parametros = parametroRemesadoraService.getAll();
         if (remesa == null) {
             throw new IllegalArgumentException("Remesa no puede ser null");
         } else {
             cantidad = remesa.trim().length();
-            //rem = busMg(cantidad, remesa,, myProperties.getNumeroMG());
+            //rem = busMg(cantidad, remesa, myProperties.getNumeroMG());
             rem = "";//MoneyGram aun no se implementa
             if (rem.isEmpty()) {
                 parametro = getParametrosMrecod(parametros, myProperties.getNumeroVigo());
@@ -308,7 +306,7 @@ public class UtilService {
         //int MRELMA = 11;
         //char MRETDA = 'N';
         //String MREINI = "1";
-        List<ValoresGlobalesRemesasEntity> lista = valoresGlobalesRemesasRepository.findByItem("000018NC");
+        List<ValoresGlobalesRemesasEntity> lista = valoresGlobalesRemesasService.GetListByItem("000018NC");
         String numCorrelativo1 = lista.get(0).getValor();
         String numCorrelativo2 = lista.get(1).getValor();
         //String numCorrelativo1 = "2";
@@ -491,7 +489,7 @@ public class UtilService {
     }
 
     public boolean CompararNombre(ComparacionNombreDto comparacionNombreDto,String mrecod) {
-        ValoresGlobalesRemesasEntity valoresGlobalesRemesas = valoresGlobalesRemesasRepository.findByCodigoAndItem("ComparacionNombres", "algoritmo");
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas = valoresGlobalesRemesasService.findByCodeAndItem("ComparacionNombres", "algoritmo");
         boolean canCharge = false;
         if (valoresGlobalesRemesas.getValor().equals("1")) {
             canCharge = calcularSimilaridad(comparacionNombreDto,mrecod);
@@ -506,7 +504,7 @@ public class UtilService {
 
     public boolean calcularSimilaridad(ComparacionNombreDto comparacionNombreDto,String mrecod) {
 
-        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem(mrecod, "remesadora");
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasService.findByCodeAndItem(mrecod, "remesadora");
         double umbral = Double.parseDouble(valoresGlobalesRemesas2.getValor());
         boolean canCharge = false;
         double similitudTotal = 0;
@@ -616,7 +614,7 @@ public class UtilService {
 
         String nombreBen = (pnBp + " " + snBp + " " + paBp + " " + saBp).trim();
         String nombreBeneficiario = (pnS + " " + snS + " " + paS + " " + saS).trim();
-        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasRepository.findByCodigoAndItem(mrecod, "remesadora");
+        ValoresGlobalesRemesasEntity valoresGlobalesRemesas2 = valoresGlobalesRemesasService.findByCodeAndItem(mrecod, "remesadora");
         Double umbral = Double.parseDouble(valoresGlobalesRemesas2.getValor());
         if (!nombreBen.equals(nombreBeneficiario)) {
             if (!nombreBen.trim().isEmpty() && !nombreBeneficiario.trim().isEmpty()) {

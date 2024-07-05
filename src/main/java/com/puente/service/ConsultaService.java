@@ -44,7 +44,7 @@ public class ConsultaService {
     }
     public String validacionCanalConsulta(ValidacionCanalDto data){
         SeguridadCanalEntity canal = data.getCanal();
-        String result = "";
+        String result = "000000";
         switch (canal.getCodigoCanal()) {
             case "0002":
                 // validaciones de canal 0002 JTELLER
