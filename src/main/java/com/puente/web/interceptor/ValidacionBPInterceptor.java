@@ -1,7 +1,11 @@
 package com.puente.web.interceptor;
 
+import com.puente.persistence.entity.CamposRequeridosEntity;
+import com.puente.persistence.entity.CamposRequeridosId;
+import com.puente.service.CamposRequeridosService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
@@ -12,9 +16,14 @@ import com.puente.service.dto.ResponseDto;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ValidacionBPInterceptor implements HandlerInterceptor {
+    @Autowired
+    private CamposRequeridosService camposRequeridosService;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         try {
@@ -24,13 +33,14 @@ public class ValidacionBPInterceptor implements HandlerInterceptor {
             // Obtener el cuerpo de la petición
             DatosBpDto datosBpDto = this.optenerCuerpoDePeticion(customRequest);
 
-            //Obtenemos la clase de nuestro objeto
+            // Obtenemos la clase de nuestro objeto
             Class<?> miClase = DatosBpDto.class;
 
-            //Obtenemos los nombres de los atributos de nuestra clase
+            // Obtenemos los nombres de los atributos de nuestra clase
             Field[] campos = miClase.getDeclaredFields();
 
             if(datosBpDto != null) {
+                List<CamposRequeridosEntity> camposRequeridos = this.camposRequeridosService.getByServicio("crearBp");
                 // Recorremos los atributos del objeto que viene de la petición para realizar las validaciones
                 for(Field campo : campos){
                     //Habilitamos los atributos que sean privados para poder acceder a ellos
@@ -43,23 +53,29 @@ public class ValidacionBPInterceptor implements HandlerInterceptor {
                     try {
                         //Obtenemos el nombre del atributo
                         String nombreCampo = campo.getName();
-                        if(campo.get(datosBpDto) instanceof String){
-                            valorCampoCasteado = (String) campo.get(datosBpDto);
-                        }
-                        if(campo.get(datosBpDto) != null){
-                            if (valorCampoCasteado.isEmpty() || valorCampoCasteado.isBlank()){
+                        Optional<CamposRequeridosEntity> configuracionDeCampo = camposRequeridos.stream().filter(
+                            campoRequerido -> campoRequerido.getNombre().equals(nombreCampo)
+                        ).findFirst();
+
+                        if(configuracionDeCampo.isPresent() && configuracionDeCampo.get().isEsRequerido()) {
+                            if(campo.get(datosBpDto) instanceof String){
+                                valorCampoCasteado = (String) campo.get(datosBpDto);
+                            }
+                            if(campo.get(datosBpDto) != null) {
+                                if (valorCampoCasteado.isEmpty() || valorCampoCasteado.isBlank()){
+                                    return enviarError(
+                                        response,
+                                        "E-P003",
+                                        "El contenido de la etiqueta [" + nombreCampo + "] no puede ser vacío."
+                                    );
+                                }
+                            } else {
                                 return enviarError(
                                     response,
-                                    "E-P003",
-                                    "El contenido de la etiqueta [" + nombreCampo + "] no puede ser vacío."
+                                    "E-P002",
+                                    "Falta la etiqueta [" + nombreCampo + "] dentro del cuerpo de la petición"
                                 );
                             }
-                        } else {
-                            return enviarError(
-                                response,
-                                "E-P002",
-                                "Falta la etiqueta [" + nombreCampo + "] dentro del cuerpo de la petición"
-                            );
                         }
                     } catch(IllegalAccessException e) {
                         return enviarError(

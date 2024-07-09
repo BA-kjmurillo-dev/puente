@@ -1,9 +1,10 @@
 package com.puente.service;
 
-
 import com.puente.persistence.entity.CamposRequeridosEntity;
+import com.puente.persistence.entity.CamposRequeridosId;
 import com.puente.persistence.repository.CamposRequeridosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +22,12 @@ public class CamposRequeridosService {
         return this.camposRequeridosRepository.findAll();
     }
 
-    public CamposRequeridosEntity get(String codigo) {
-        return this.camposRequeridosRepository.findById(codigo).orElse(null);
+    public CamposRequeridosEntity get(CamposRequeridosId camposRequeridosId) {
+        return this.camposRequeridosRepository.findById(camposRequeridosId).orElse(null);
+    }
+
+    @Cacheable(value = "miCache", key = "#servicio")
+    public List<CamposRequeridosEntity> getByServicio(String servicio) {
+        return this.camposRequeridosRepository.findByServicio(servicio);
     }
 }

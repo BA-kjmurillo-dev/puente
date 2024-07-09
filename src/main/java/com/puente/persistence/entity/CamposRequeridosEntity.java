@@ -1,15 +1,13 @@
 package com.puente.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name="CamposRequeridos")
+@IdClass(CamposRequeridosId.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,12 +16,13 @@ public class CamposRequeridosEntity {
     @Column(nullable = false, length = 25)
     private String servicio;
 
-    @Column(length = 50)
+    @Id
+    @Column(nullable = false, length = 50)
     private String nombre;
 
     @Column(name = "es_requerido")
     private boolean esRequerido;
 
     @Column(length = 100)
-    private boolean descripcion;
+    private String descripcion;
 }

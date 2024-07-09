@@ -1,5 +1,6 @@
 package com.puente.web.exception;
 
+import com.puente.service.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
@@ -9,17 +10,26 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import com.puente.service.dto.ResponseGetRemittanceDataDto;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * @description Metodo que centraliza los mensajes de error cuando el cuerpo del Request no tenga la estructura
+     *              correcta.
+     * @param ex Recibe un objeto de tipo RuntimeException.
+     * @return ErrorDto Retorna un objeto de tipo ErrorDto, que contiene el detalle del error.
+     * */
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ErrorDto> runtimeExceptionHandler(RuntimeException ex){
+        ErrorDto errorDto = ErrorDto.builder().type("Error").code("400").message(ex.getMessage()).build();
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
