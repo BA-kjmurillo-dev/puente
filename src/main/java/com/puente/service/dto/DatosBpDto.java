@@ -46,4 +46,6 @@ public class DatosBpDto {
 
     private String fechaVencimientoId;
 
+    private String correo;
+
 }
