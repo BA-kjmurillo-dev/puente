@@ -1,5 +1,6 @@
 package com.puente.service;
 
+import com.puente.client.SrvBasa010Client;
 import com.puente.persistence.entity.MessageCodesEntity;
 import com.puente.persistence.entity.ParametroRemesadoraEntity;
 import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
@@ -8,6 +9,8 @@ import com.puente.service.dto.ResponseDto;
 import com.puente.service.dto.ComparacionNombreDto;
 import com.puente.web.config.MyProperties;
 import com.puente.service.dto.ResponseGetRemittanceDataDto;
+import com.soap.wsdl.ServicioSrvBasa003.EjecutarSrvBasa003Response;
+import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common;
@@ -52,10 +55,17 @@ public class UtilService {
     private MyProperties myProperties;
     @Autowired
     ValoresGlobalesRemesasService valoresGlobalesRemesasService;
-
+    @Autowired
+    private static SrvBasa002Service srvBasa002Service;
+    @Autowired
+    SrvBasa003Service srvBasa003Service;
+    @Autowired
+    private static SrvBasa010Service srvBasa010Service;
+    @Autowired
+    private SrvBasa010Client srvBasa010Client;
 
     public Boolean isResponseSuccess(ResponseDto servicesResponse) {
-        return servicesResponse.getMessageCode().equals("000000");
+        return servicesResponse.getCode().equals("000000");
     }
 
     public Boolean existBp(DTCreaBusinessPartnerResp bpInfo) {
@@ -126,15 +136,16 @@ public class UtilService {
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
     }
 
+    // Consultar mensaje de de la base de datos
     public ResponseGetRemittanceDataDto getCustomMessageCode(String code) {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
-        messageCode.setMessageCode(code);
+        messageCode.setCode(code);
         return this.getFormattedMessageCode(messageCode);
     }
 
     public ResponseGetRemittanceDataDto getWsdlMessageCode(ResponseDto responseWsdl) {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
-        messageCode.setMessageCode(responseWsdl.getMessageCode());
+        messageCode.setCode(responseWsdl.getCode());
         messageCode.setMessage(responseWsdl.getMessage());
         return this.getFormattedMessageCode(messageCode);
     }
@@ -142,14 +153,15 @@ public class UtilService {
     public ResponseGetRemittanceDataDto getFormattedMessageCode(
             ResponseGetRemittanceDataDto servicesResponse
     ) {
-        MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getMessageCode());
+        // Se busca por el campo  MESSAGE_CODE code en la tabla de MESSAGE_CODES
+        MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getCode());
         ResponseGetRemittanceDataDto formattedResponse = new ResponseGetRemittanceDataDto();
         if (messageCode == null || messageCode.getMessage() == null) {
             formattedResponse.setMessage(servicesResponse.getMessage());
-            formattedResponse.setMessageCode(servicesResponse.getMessageCode());
+            formattedResponse.setCode(servicesResponse.getCode());
         } else {
             formattedResponse.setMessage(messageCode.getMessage());
-            formattedResponse.setMessageCode(messageCode.getCode());
+            formattedResponse.setCode(messageCode.getCode());
         }
         // Technical message
         this.setTechnicalMessageLog(messageCode);
@@ -173,7 +185,7 @@ public class UtilService {
 
     public ResponseGetRemittanceDataDto getExceptionMessageCode(Exception e) {
         ResponseGetRemittanceDataDto responseDto = new ResponseGetRemittanceDataDto();
-        responseDto.setMessageCode("Exception");
+        responseDto.setCode("Exception");
         responseDto.setMessage(e.getMessage());
         return this.getFormattedMessageCode(responseDto);
     }
@@ -664,5 +676,24 @@ public class UtilService {
             }
         }
         return 0;
+    }
+
+    public boolean validaAgenciaSucursal(String cuenta)
+    {
+        EjecutarSrvBasa003Response ejecutarSrvBasa003Response = srvBasa003Service.getInfoCuenta(cuenta);
+        if (!ejecutarSrvBasa003Response.getRespuestaSrvBasa003().getCodigoMensaje().equals("00")) {
+            return false;
+        }
+        String agencia = ejecutarSrvBasa003Response.getRespuestaSrvBasa003().getColeccionCuenta().get(0).getCodigoSucursal();
+        EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Client.getResponse010(agencia,"*");
+        if (ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().isEmpty() &&
+                (ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje() == null)
+        ) {
+            return false;
+        }
+        if (!ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00")){
+            return false;
+        }
+        return true;
     }
 }

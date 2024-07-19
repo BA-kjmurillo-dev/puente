@@ -19,11 +19,11 @@ public class Wsdl04Service {
         ServicesResponse servicesResponse = wsdl04Response.getServicesresponse004().getServicesResponse();
         Wsdl04Dto response = new Wsdl04Dto();
         response.setMessage(servicesResponse.getMessage());
-        response.setMessageCode(servicesResponse.getMessageCode());
+        response.setCode(servicesResponse.getMessageCode());
         return response;
     }
 
     public Boolean isSireonActive(Wsdl04Dto servicesResponse) {
-        return servicesResponse.getMessageCode().equals("000000");
+        return servicesResponse.getCode().equals("000000");
     }
 }

@@ -13,30 +13,37 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestPayRemittanceDto {
-    @NotNull(message = "Canal es un campo requerido")
-    @NotEmpty(message = "Canal no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String canal;
-    @NotNull(message = "Identificacion es un campo requerido")
-    @NotEmpty(message = "Identificacion no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String identificacion;
-    @NotNull(message = "TipoIdentificacion es un campo requerido")
-    @NotEmpty(message = "TipoIdentificacion no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String tipoIdentificacion;
-    @NotNull(message = "AgenciaPago es un campo requerido")
-    @NotEmpty(message = "AgenciaPago no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String agenciaPago;
-    @NotNull(message = "SucursalPago es un campo requerido")
-    @NotEmpty(message = "SucursalPago no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String sucursalPago;
-    @NotNull(message = "Cajero es un campo requerido")
-    @NotEmpty(message = "Cajero no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String cajero;
-    @NotNull(message = "Banco es un campo requerido")
-    @NotEmpty(message = "Banco no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String banco;
-    @NotNull(message = "Motivo es un campo requerido")
-    @NotEmpty(message = "Motivo no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String motivo;
-    @NotNull(message = "Remesa es un campo requerido")
+    @NotNull
     private SDTServicioVentanillaOutItemRemesa remesa;
+    @NotNull
+    @NotEmpty
+    private String agencia;
+    @NotNull
+    @NotEmpty
+    private String sucursal;
+    private String cuenta;
 }

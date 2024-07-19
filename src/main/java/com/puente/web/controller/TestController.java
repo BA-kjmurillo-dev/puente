@@ -1,10 +1,15 @@
 package com.puente.web.controller;
 
+import com.puente.client.SrvBasa002Client;
+import com.puente.client.SrvBasa003Client;
+import com.puente.client.SrvBasa010Client;
 import com.puente.client.WsdlBpClient;
 import com.puente.persistence.entity.ParametroRemesadoraEntity;
 import com.puente.persistence.repository.ParametroRemesadoraRepository;
-import com.puente.persistence.repository.ValoresGlobalesRemesasRepository;
 import com.puente.service.dto.*;
+import com.soap.wsdl.ServicioSrvBasa002.EjecutarSrvBasa002Response;
+import com.soap.wsdl.ServicioSrvBasa003.EjecutarSrvBasa003Response;
+import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import com.soap.wsdl.service03.SDTServicioVentanillaIn;
 import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
@@ -28,39 +33,44 @@ public class TestController {
     private static final Logger log = LoggerFactory.getLogger(ConsultaController.class);
     private final ConsultaController consultaController;
     private final UtilService utilService;
-    private final ConsultaService consultaService;
     private final Wsdl03Service wsdl03Service;
     private final Wsdl04Service wsdl04Service;
     private final Wsdl05Service wsdl05Service;
     private final Wsdl07Service wsdl07Service;
-    private final ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository;
     private final WsdlBpClient wsdlBpClient;
     private final ParametroRemesadoraRepository parametroRemesadoraRepository;
-
+    private final SrvBasa010Client srvBasa010Client;
+    private final SrvBasa002Client srvBasa002Client;
+    private final SrvBasa003Client srvBasa003Client;
+    private static SrvBasa010Service srvBasa010Service;
     @Autowired
     public TestController(
             ConsultaController consultaController,
             UtilService utilService,
-            ConsultaService consultaService,
             Wsdl03Service wsdl03Service,
             Wsdl04Service wsdl04Service,
             Wsdl05Service wsdl05Service,
             Wsdl07Service wsdl07Service,
-            ValoresGlobalesRemesasRepository valoresGlobalesRemesasRepository,
             ParametroRemesadoraRepository parametroRemesadoraRepository,
-            WsdlBpClient wsdlBpClient 
+            WsdlBpClient wsdlBpClient,
+            SrvBasa010Client srvBasa010Client,
+            SrvBasa002Client srvBasa002Client,
+            SrvBasa003Client srvBasa003Client,
+            SrvBasa010Service srvBasa010Service
 
     ) {
         this.consultaController = consultaController;
         this.utilService = utilService;
-        this.consultaService = consultaService;
         this.wsdl03Service = wsdl03Service;
         this.wsdl04Service = wsdl04Service;
         this.wsdl05Service = wsdl05Service;
         this.wsdl07Service = wsdl07Service;
-        this.valoresGlobalesRemesasRepository = valoresGlobalesRemesasRepository;
         this.parametroRemesadoraRepository = parametroRemesadoraRepository;
         this.wsdlBpClient = wsdlBpClient;
+        this.srvBasa010Client = srvBasa010Client;
+        this.srvBasa002Client = srvBasa002Client;
+        this.srvBasa003Client = srvBasa003Client;
+        this.srvBasa010Service = srvBasa010Service;
     }
 
     @PostMapping("/remittanceAlgorithm")
@@ -168,6 +178,29 @@ public class TestController {
 
         return ResponseEntity.ok(list);
     }
+    @PostMapping("/basa010")
+    public ResponseEntity<EjecutarSrvBasa010Response> basa010Test() {
+
+        String agencia = "asd";
+        EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Service.getInfoAgencia(agencia);
+        log.info(ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje());
+        return ResponseEntity.ok(ejecutarSrvBasa010Response);
+    }
+
+    @PostMapping("/basa002")
+    public ResponseEntity<EjecutarSrvBasa002Response> basa020Test() {
+        String agencia = "101";
+        EjecutarSrvBasa002Response ejecutarSrvBasa020Response = srvBasa002Client.getResponse002(1000478287,"1"); //ejecutarSrvBasa020Client
+
+        return ResponseEntity.ok(ejecutarSrvBasa020Response);
+    }
+
+    @PostMapping("/basa003")
+    public ResponseEntity<EjecutarSrvBasa003Response> basa030Test() {
+        String cuenta = "120520077401";
+        EjecutarSrvBasa003Response ejecutarSrvBasa030Response = srvBasa003Client.getResponse003(cuenta); //ejecutarSrvBasa030Client
+        return ResponseEntity.ok(ejecutarSrvBasa030Response);
+    }
 
     /**
      * @description Metodo Post que se utiliza para el llamado del servicio SOAP para la creacion del BP.
@@ -180,4 +213,6 @@ public class TestController {
     public ResponseEntity<?> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
         return ResponseEntity.ok(wsdlBpClient.getResponseCreateBp(datosBpDto));
     }
+
+
 }

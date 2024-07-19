@@ -17,12 +17,6 @@ public class MyProperties {
     private String ServicesUser;
     @Value("${ServicesPassword}")
     private String ServicesPassword;
-    @Value("${CodigoBanco}")
-    private String CodigoBanco;
-    @Value("${IdentificadorRemesa}")
-    private String IdentificadorRemesa;
-    @Value("${TipoFormaPago}")
-    private String TipoFormaPago;
     @Value("${MotivoRemesa}")
     private String MotivoRemesa;
     @Value("${Awssireon003}")
@@ -47,6 +41,27 @@ public class MyProperties {
     private String NumeroRia;
     @Value("${NumeroMaxi}")
     private String NumeroMaxi;
-
+    @Value("${ServicioSrvBasa010}")
+    private String ServicioSrvBasa010;
+    @Value("${ServicioSrvBasa002}")
+    private String ServicioSrvBasa002;
+    @Value("${ServicioSrvBasa003}")
+    private String ServicioSrvBasa003;
+    @Value("${codigoTransaccion}")
+    private String codigoTransaccion;
+    @Value("${codigoPais}")
+    private String codigoPais;
+    @Value("${codigoCoreBanking}")
+    private String codigoCoreBanking;
+    @Value("usuarioPeticion")
+    private String usuarioPeticion;
+    @Value("direccionIPPeticion")
+    private String direccionIPPeticion;
+    @Value("${CodigoBanco}")
+    private String CodigoBanco;
+    @Value("${codigoCanal}")
+    private String codigoCanal;
+    @Value("${CodigoPeticionUnica}")
+    private String CodigoPeticionUnica;
 
 }

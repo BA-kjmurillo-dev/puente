@@ -12,13 +12,20 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestGetRemittanceDataDto {
-    @NotNull(message = "Canal es un campo requerido")
-    @NotEmpty(message = "Canal no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String canal;
-    @NotNull(message = "IdentificadorRemesa es un campo requerido")
-    @NotEmpty(message = "IdentificadorRemesa no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String identificadorRemesa;
-    @NotNull(message = "Identificacion es un campo requerido")
-    @NotEmpty(message = "Identificacion no puede ir vacío")
+    @NotNull
+    @NotEmpty
     private String identificacion;
+    @NotNull
+    @NotEmpty
+    private String agencia;
+    @NotNull
+    @NotEmpty
+    private String sucursal;
+    private String cuenta;
 }

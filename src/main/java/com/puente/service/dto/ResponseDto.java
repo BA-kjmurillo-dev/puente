@@ -6,6 +6,6 @@ import lombok.*;
 @Setter
 public class ResponseDto {
     private String type;
-    private String messageCode;
+    private String code;
     private String message;
 }
