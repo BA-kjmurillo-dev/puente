@@ -136,30 +136,38 @@ public class UtilService {
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
     }
 
-    // Consultar mensaje de de la base de datos
+    // Consultar mensaje de de la base de datos si no se le envia el type lo devuelve como Error
     public ResponseGetRemittanceDataDto getCustomMessageCode(String code) {
+        return this.getCustomMessageCode(code, "Error");
+    }
+
+    // Consultar mensaje de de la base de datos con type personalizado
+    public ResponseGetRemittanceDataDto getCustomMessageCode(String code, String type) {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
         messageCode.setCode(code);
-        return this.getFormattedMessageCode(messageCode);
+        return this.getFormattedMessageCode(messageCode, type);
     }
 
     public ResponseGetRemittanceDataDto getWsdlMessageCode(ResponseDto responseWsdl) {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
         messageCode.setCode(responseWsdl.getCode());
         messageCode.setMessage(responseWsdl.getMessage());
-        return this.getFormattedMessageCode(messageCode);
+        return this.getFormattedMessageCode(messageCode, "Error");
     }
 
     public ResponseGetRemittanceDataDto getFormattedMessageCode(
-            ResponseGetRemittanceDataDto servicesResponse
+            ResponseGetRemittanceDataDto servicesResponse,
+            String type
     ) {
         // Se busca por el campo  MESSAGE_CODE code en la tabla de MESSAGE_CODES
         MessageCodesEntity messageCode = messageCodesService.get(servicesResponse.getCode());
         ResponseGetRemittanceDataDto formattedResponse = new ResponseGetRemittanceDataDto();
         if (messageCode == null || messageCode.getMessage() == null) {
+            formattedResponse.setType(type);
             formattedResponse.setMessage(servicesResponse.getMessage());
             formattedResponse.setCode(servicesResponse.getCode());
         } else {
+            formattedResponse.setType(type);
             formattedResponse.setMessage(messageCode.getMessage());
             formattedResponse.setCode(messageCode.getCode());
         }
@@ -180,6 +188,7 @@ public class UtilService {
             } else if(messageCode.getMessage() != null) {
                 log.error(messageCode.getMessage());
             }
+            // TODO: Agregar registro en la tabla de LOG
         }
     }
 
@@ -187,7 +196,7 @@ public class UtilService {
         ResponseGetRemittanceDataDto responseDto = new ResponseGetRemittanceDataDto();
         responseDto.setCode("Exception");
         responseDto.setMessage(e.getMessage());
-        return this.getFormattedMessageCode(responseDto);
+        return this.getFormattedMessageCode(responseDto, "Error");
     }
 
     //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
