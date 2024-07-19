@@ -186,8 +186,54 @@
 							<extension>true</extension>
 						</configuration>
 					</execution>
+					<execution>
+						<id>ServicioSrvBasa002</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.ServicioSrvBasa002</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://srvbasa.bancatlan.hn:30002/SRVBASA002-1.0/ServicioSrvBasa002Interfaz?wsdl</wsdlUrl>
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+					<execution>
+						<id>ServicioSrvBasa003</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.ServicioSrvBasa003</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://srvbasa.bancatlan.hn:30003/SRVBASA003-1.0/ServicioSrvBasa003Interfaz?wsdl</wsdlUrl>
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
+					<execution>
+						<id>ServicioSrvBasa010</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+						<configuration>
+							<packageName>com.soap.wsdl.ServicioSrvBasa010</packageName>
+							<wsdlUrls>
+								<wsdlUrl>http://srvbasa.bancatlan.hn:30010/SRVBASA010-1.0/ServicioSrvBasa010Interfaz?wsdl</wsdlUrl>
+							</wsdlUrls>
+							<sourceDestDir>${sourcesDir}</sourceDestDir>
+							<destDir>${classesDir}</destDir>
+							<extension>true</extension>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
+
 			<!-- end::wsdl[] -->
 		</plugins>
 	</build>

@@ -200,18 +200,18 @@ public class ConsultaController {
                     dataCompleta.setItemRemesa(wsdl03Response.getData());
                     dataCompleta.setBpInfo(bpInfo);
                     dataCompleta.setCanal(channelInfo);
-                    String codeValidation = this.consultaService.validacionCanalConsulta(dataCompleta);
+                    String codeValidation = this.consultaService.validacionCanalConsulta(dataCompleta,requestData.getCuenta(),requestData.getAgencia(),requestData.getSucursal());
 
                     if (!codeValidation.equals("000000")) {
                         //this.utilService.getCustomMessageCode("000030");
                         return ResponseEntity.ok(
-                                this.utilService.getCustomMessageCode("000030") // remittance data not found
+                                this.utilService.getCustomMessageCode(codeValidation) // remittance data not found
                         );
                     }
 
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
                     responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
-                    responseGetRemittanceDataDto.setMessageCode(wsdl03Response.getMessageCode());
+                    responseGetRemittanceDataDto.setCode(wsdl03Response.getCode());
                     responseGetRemittanceDataDto.setData(wsdl03Response.getData());
                     if(isJteller) { responseGetRemittanceDataDto.setExisteBp(existBp); }
                     return ResponseEntity.ok(responseGetRemittanceDataDto);

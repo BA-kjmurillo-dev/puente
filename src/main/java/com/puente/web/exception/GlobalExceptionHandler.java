@@ -41,20 +41,20 @@ public class GlobalExceptionHandler {
         // eval Not Null field
         if(this.evalError(allErrors, "NotNull")) {
             ResponseGetRemittanceDataDto errorResponse = new ResponseGetRemittanceDataDto();
-            errorResponse.setMessageCode("E-P002");
+            errorResponse.setCode("E-P002");
             errorResponse.setMessage("Falta la etiqueta [" + fieldName + "] dentro del cuerpo de la petición");
             return ResponseEntity.badRequest().body(errorResponse);
         }
         // eval Not Empty field
         if(this.evalError(allErrors, "NotEmpty")) {
             ResponseGetRemittanceDataDto errorResponse = new ResponseGetRemittanceDataDto();
-            errorResponse.setMessageCode("E-P003");
+            errorResponse.setCode("E-P003");
             errorResponse.setMessage("El contenido de la etiqueta [" + fieldName + "] no puede ser vacío.");
             return ResponseEntity.badRequest().body(errorResponse);
         }
 
         ResponseGetRemittanceDataDto errorResponse = new ResponseGetRemittanceDataDto();
-        errorResponse.setMessageCode("E-P001");
+        errorResponse.setCode("E-P001");
         errorResponse.setMessage("Debe revisar el cuerpo de la petición.");
         return ResponseEntity.badRequest().body(errorResponse);
     }
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ResponseGetRemittanceDataDto> handleUnrecognizedPropertyException(UnrecognizedPropertyException e) {
         String fieldName = e.getPropertyName();
         ResponseGetRemittanceDataDto errorResponse = new ResponseGetRemittanceDataDto();
-        errorResponse.setMessageCode("E-P000");
+        errorResponse.setCode("E-P000");
         if(fieldName.trim().length() == 0) {
             errorResponse.setMessage("No puedes enviar propiedades vacias");
         } else {

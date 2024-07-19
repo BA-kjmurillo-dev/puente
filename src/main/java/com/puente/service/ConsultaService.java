@@ -1,10 +1,14 @@
 package com.puente.service;
 
+import com.puente.client.SrvBasa010Client;
 import com.puente.persistence.entity.SeguridadCanalEntity;
 import com.puente.service.dto.ComparacionNombreDto;
 import com.puente.service.dto.RemittanceAlgorithmDto;
 import com.puente.service.dto.ValidacionCanalDto;
 import com.puente.web.controller.ConsultaController;
+import com.soap.wsdl.ServicioSrvBasa002.EjecutarSrvBasa002Response;
+import com.soap.wsdl.ServicioSrvBasa003.EjecutarSrvBasa003Response;
+import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import com.soap.wsdl.service03.SDTServicioVentanillaOutItemRemesa;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import lombok.NoArgsConstructor;
@@ -29,7 +33,10 @@ public class ConsultaService {
     private UtilService utilService;
     @Autowired
     private static final Logger log = LoggerFactory.getLogger(ConsultaService.class);
-
+    @Autowired
+    private static SrvBasa010Service srvBasa010Service;
+    @Autowired
+    private SrvBasa010Client srvBasa010Client;
     public RemittanceAlgorithmDto ConsultaRemesadora(String remesa){
         return utilService.ConsultaRemesadora(remesa);
     }
@@ -42,7 +49,7 @@ public class ConsultaService {
         keyValueMap.put("02", "DEPOSIT_ACCOUNT");
         return keyValueMap.get(paymentMethod) == null ? "CASH" : keyValueMap.get(paymentMethod);
     }
-    public String validacionCanalConsulta(ValidacionCanalDto data){
+    public String validacionCanalConsulta(ValidacionCanalDto data,String cuenta,String agencia,String sucursal){
         SeguridadCanalEntity canal = data.getCanal();
         String result = "000000";
         switch (canal.getCodigoCanal()) {
@@ -52,7 +59,7 @@ public class ConsultaService {
                 break;
             case "0003":
                 // Validaciones de canal 0003 OCB
-                result = validacionCanalOcbConsulta(data);
+                result = validacionCanalOcbConsulta(data,cuenta,agencia,sucursal);
                 break;
             case "0004":
                 // Validaciones de canal 0004 ABAS
@@ -73,7 +80,7 @@ public class ConsultaService {
         return result;
     }
 
-    public String validacionCanalOcbConsulta(ValidacionCanalDto data){
+    public String validacionCanalOcbConsulta(ValidacionCanalDto data,String cuenta,String agencia,String sucursal){
 
         DTCreaBusinessPartnerResp bpInfo = data.getBpInfo();
         SDTServicioVentanillaOutItemRemesa itemRemesa = data.getItemRemesa();
@@ -94,6 +101,15 @@ public class ConsultaService {
         benSireion.setSegundoApellidoSireon(itemRemesa.getBeneficiario().getSegundoApellido());
         comparacion.setBeneficiarioSireon(benSireion);
 
+        boolean result = validaAgenciaSucursal(agencia,sucursal);
+
+        if (!result) {
+            boolean result2 = this.utilService.validaAgenciaSucursal(cuenta);
+            if (!result2) {
+                return "000031";
+            }
+        }
+
         boolean similarity = this.utilService.CompararNombre(comparacion,itemRemesa.getCodigoRemesadora());
         if (similarity) {
             return "000000";
@@ -102,5 +118,21 @@ public class ConsultaService {
         }
 
     }
+    public boolean validaAgenciaSucursal(String agencia, String sucursal){
+        if (agencia == null || sucursal == null || agencia.isEmpty() || sucursal.isEmpty()) {
+            return false;
+        }
+        EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Client.getResponse010(agencia,sucursal);
+        //EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Service.getInfoAgenciaSucursal(agencia,sucursal);
+        if ( ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().isEmpty() &&
+                (ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje() == null)
+        ) {
 
+            return false;
+        }
+        if (!ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00")){
+            return false;
+        }
+        return true;
+    }
 }

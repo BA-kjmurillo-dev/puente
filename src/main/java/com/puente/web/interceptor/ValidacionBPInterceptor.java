@@ -1,7 +1,6 @@
 package com.puente.web.interceptor;
 
 import com.puente.persistence.entity.CamposRequeridosEntity;
-import com.puente.persistence.entity.CamposRequeridosId;
 import com.puente.service.CamposRequeridosService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -123,7 +122,7 @@ public class ValidacionBPInterceptor implements HandlerInterceptor {
     private boolean enviarError(HttpServletResponse response, String codigo, String mensaje) throws IOException {
         ResponseDto errorResponse = new ResponseDto();
         errorResponse.setType("Error");
-        errorResponse.setMessageCode(codigo);
+        errorResponse.setCode(codigo);
         errorResponse.setMessage(mensaje);
         String jsonResponse = new ObjectMapper().writeValueAsString(errorResponse);
 
