@@ -94,7 +94,7 @@ public class PagoController {
 
             ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
             responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
-            responseGetRemittanceDataDto.setMessageCode(wsdl03Response.getMessageCode());
+            responseGetRemittanceDataDto.setCode(wsdl03Response.getCode());
             responseGetRemittanceDataDto.setData(wsdl03Response.getData());
             return ResponseEntity.ok(responseGetRemittanceDataDto);
         } catch (Exception e) {

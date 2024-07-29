@@ -13,7 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseGetRemittanceDataDto {
-    private String messageCode;
+    private String type;
+    private String code;
     private String message;
     private SDTServicioVentanillaOutItemRemesa data;
     private Boolean existeBp;

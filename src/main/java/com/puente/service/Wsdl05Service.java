@@ -29,7 +29,7 @@ public class Wsdl05Service {
             String message = responseStatus.getMessage();
 
             Wsdl05Dto remittancesListResponse = new Wsdl05Dto();
-            remittancesListResponse.setMessageCode(messageCode);
+            remittancesListResponse.setCode(messageCode);
             remittancesListResponse.setMessage(message);
 
             if (messageCode.equals("000000")) {

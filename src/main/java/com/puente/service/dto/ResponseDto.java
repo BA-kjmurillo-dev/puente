@@ -5,6 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 public class ResponseDto {
-    private String messageCode;
+    private String type;
+    private String code;
     private String message;
 }
