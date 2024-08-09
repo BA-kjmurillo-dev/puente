@@ -13,5 +13,6 @@ public class RemittanceAlgorithmDto {
 
     private String message;
     private String Mrecod;
+    private String DatosExtras;
 
 }

@@ -211,8 +211,9 @@ public class UtilService {
             throw new IllegalArgumentException("Remesa no puede ser null");
         } else {
             cantidad = remesa.trim().length();
-            //rem = busMg(cantidad, remesa, myProperties.getNumeroMG());
-            rem = "";//MoneyGram aun no se implementa
+            parametro = getParametrosMrecod(parametros, myProperties.getNumeroMg());
+            rem = busMg(cantidad, remesa, parametro);
+            //MoneyGram aun no se implementa
             if (rem.isEmpty()) {
                 parametro = getParametrosMrecod(parametros, myProperties.getNumeroVigo());
                 rem = busVigo(cantidad, remesa, parametro);
@@ -225,17 +226,22 @@ public class UtilService {
                         if (rem.isEmpty()) {
                             parametro = getParametrosMrecod(parametros, myProperties.getNumeroBts());
                             rem = busBTS(cantidad, remesa, parametro);
-                            if (rem.isEmpty()) {
-                                resp.setMessage("false");
-                                resp.setMrecod("false");
-                            }else{
-                                resp.setMessage("true");
-                                resp.setMrecod(rem);
-                            }
+
                         }
                     }
                 }
             }
+        }
+        if (rem.isEmpty()) {
+            resp.setMessage("false");
+            resp.setMrecod("false");
+        }else{
+            resp.setMessage("false");
+            if(!rem.equals("000006")) {
+                resp.setMessage("true");
+            }
+            resp.setMrecod(rem);
+            resp.setDatosExtras("true");
         }
 
         return resp;
