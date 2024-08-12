@@ -69,7 +69,7 @@ public class ConsultaController {
             ValoresGlobalesRemesasEntity bank = valoresGlobalesService.findByCodeAndItem( "01", "bank");
 
             if(channelInfo == null) {
-                return ResponseEntity.ok(
+                return ResponseEntity.status(400).body(
                     this.utilService.getCustomMessageCode("ERROR01") // channel is not parameterized
                 );
             }
@@ -80,7 +80,7 @@ public class ConsultaController {
                 // error Wsdl04
                 this.utilService.getCustomTechnicalMessage("ERRORWSDL04");
                 ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl04Response);
-                return ResponseEntity.ok(formattedResponse);
+                return ResponseEntity.status(400).body(formattedResponse);
             }
 
             // get Remitters by channel Wsdl05 async
@@ -115,31 +115,34 @@ public class ConsultaController {
                         // error Wsdl05
                         this.utilService.getCustomTechnicalMessage("ERRORWSDL05");
                         ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl05Response);
-                        return ResponseEntity.ok(formattedResponse);
+                        return ResponseEntity.status(400).body(formattedResponse);
                     }
 
                     List<Wsdl05Dto.Awsdl05Data> remittersList = wsdl05Response.getData();
                     String remitterCode;
                     String remitterMesage;
+                    String datosExtras;
 
                     if(wsdl07Response.getData() != null) {
                         String remittanceStatus = wsdl07Response.getData().getEstadoRemesa();
                         Boolean isValidStatus = this.wsdl07Service.isValidStatus(remittanceStatus);
+                        datosExtras = "false";
                         if(isValidStatus) {
                             remitterCode = wsdl07Response.getData().getCodigoRemesadora();
                             remitterMesage = "true";
                         } else {
-                            return ResponseEntity.ok(
+                            return ResponseEntity.status(400).body(
                                 this.utilService.getCustomMessageCode("ERROR03") // Status remittance not valid
                             );
                         }
                     } else {
                         remitterCode = remittanceAlgorithmResponse.getMrecod();
                         remitterMesage = remittanceAlgorithmResponse.getMessage();
+                        datosExtras = remittanceAlgorithmResponse.getDatosExtras();
                     }
 
                     if("false".equals(remitterMesage)) {
-                        return ResponseEntity.ok(
+                        return ResponseEntity.status(400).body(
                             this.utilService.getCustomMessageCode("SIREMU") // Pay for Siremu
                         );
                     }
@@ -151,7 +154,7 @@ public class ConsultaController {
                     boolean isJteller = channelInfo.getCanal().equals("JTELLER");
                     if(!existBp) {
                         if(!isJteller) {
-                            return ResponseEntity.ok(
+                            return ResponseEntity.status(400).body(
                                 this.utilService.getCustomMessageCode("ERROR04") // Error, se debe Crear BP
                             );
                         }
@@ -159,7 +162,7 @@ public class ConsultaController {
 
                     //validate BP Status
                     if(bpInfo.getCheckLists().getStatus() != null) {
-                        return ResponseEntity.ok(
+                        return ResponseEntity.status(400).body(
                              this.utilService.getCustomMessageCode("ERROR05") // Error in BP Status
                         );
                     }
@@ -169,7 +172,7 @@ public class ConsultaController {
                             .anyMatch(remitter -> remitter.getCodigoRemesador().equals(remitterCode));
 
                     if(!isChannelValid) {
-                        return ResponseEntity.ok(
+                        return ResponseEntity.status(400).body(
                             this.utilService.getCustomMessageCode("ERROR02") // This remitter cannot pay for this channel.
                         );
                     }
@@ -183,12 +186,12 @@ public class ConsultaController {
                         // error Wsdl03
                         this.utilService.getCustomTechnicalMessage("ERRORWSDL03");
                         ResponseGetRemittanceDataDto formattedResponse = this.utilService.getWsdlMessageCode(wsdl03Response);
-                        return ResponseEntity.ok(formattedResponse);
+                        return ResponseEntity.status(400).body(formattedResponse);
                     }
 
                     // validate empty wsdl03 response
                     if(wsdl03Response.getData().getIdentificadorRemesa().isEmpty()) {
-                        return ResponseEntity.ok(
+                        return ResponseEntity.status(400).body(
                             this.utilService.getCustomMessageCode("V30201") // remittance data not found
                         );
                     }
@@ -204,7 +207,7 @@ public class ConsultaController {
 
                     if (!codeValidation.equals("000000")) {
                         //this.utilService.getCustomMessageCode("000030");
-                        return ResponseEntity.ok(
+                        return ResponseEntity.status(400).body(
                                 this.utilService.getCustomMessageCode(codeValidation) // remittance data not found
                         );
                     }
@@ -213,18 +216,19 @@ public class ConsultaController {
                     responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
                     responseGetRemittanceDataDto.setCode(wsdl03Response.getCode());
                     responseGetRemittanceDataDto.setData(wsdl03Response.getData());
+                    responseGetRemittanceDataDto.setDatosExtras(datosExtras);
                     if(isJteller) { responseGetRemittanceDataDto.setExisteBp(existBp); }
                     return ResponseEntity.ok(responseGetRemittanceDataDto);
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Error while processing async requests", e);
                     ResponseGetRemittanceDataDto formattedResponse = this.utilService.getExceptionMessageCode(e);
-                    return ResponseEntity.ok(formattedResponse);
+                    return ResponseEntity.status(400).body(formattedResponse);
                 }
             }).join();
         } catch (Exception e) {
             log.error("Error while processing async requests", e);
             ResponseGetRemittanceDataDto formattedResponse = this.utilService.getExceptionMessageCode(e);
-            return ResponseEntity.ok(formattedResponse);
+            return ResponseEntity.status(400).body(formattedResponse);
         }
     }
 

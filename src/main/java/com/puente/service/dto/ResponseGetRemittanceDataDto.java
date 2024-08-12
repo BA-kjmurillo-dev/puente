@@ -18,4 +18,5 @@ public class ResponseGetRemittanceDataDto {
     private String message;
     private SDTServicioVentanillaOutItemRemesa data;
     private Boolean existeBp;
+    private String DatosExtras;
 }
