@@ -2,7 +2,7 @@ package com.puente.web.controller;
 
 import com.puente.client.SrvBasa002Client;
 import com.puente.client.SrvBasa003Client;
-import com.puente.client.SrvBasa010Client;
+
 import com.puente.client.WsdlBpClient;
 import com.puente.persistence.entity.ParametroRemesadoraEntity;
 import com.puente.persistence.repository.ParametroRemesadoraRepository;
@@ -13,6 +13,7 @@ import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import com.soap.wsdl.service03.SDTServicioVentanillaIn;
 import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
+import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import com.puente.service.*;
 import com.puente.service.dto.ComparacionNombreDto;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @RestController
@@ -39,10 +39,10 @@ public class TestController {
     private final Wsdl07Service wsdl07Service;
     private final WsdlBpClient wsdlBpClient;
     private final ParametroRemesadoraRepository parametroRemesadoraRepository;
-    private final SrvBasa010Client srvBasa010Client;
+
     private final SrvBasa002Client srvBasa002Client;
     private final SrvBasa003Client srvBasa003Client;
-    private static SrvBasa010Service srvBasa010Service;
+    private final SrvBasa010Service srvBasa010Service;
     @Autowired
     public TestController(
             ConsultaController consultaController,
@@ -53,7 +53,6 @@ public class TestController {
             Wsdl07Service wsdl07Service,
             ParametroRemesadoraRepository parametroRemesadoraRepository,
             WsdlBpClient wsdlBpClient,
-            SrvBasa010Client srvBasa010Client,
             SrvBasa002Client srvBasa002Client,
             SrvBasa003Client srvBasa003Client,
             SrvBasa010Service srvBasa010Service
@@ -67,22 +66,21 @@ public class TestController {
         this.wsdl07Service = wsdl07Service;
         this.parametroRemesadoraRepository = parametroRemesadoraRepository;
         this.wsdlBpClient = wsdlBpClient;
-        this.srvBasa010Client = srvBasa010Client;
         this.srvBasa002Client = srvBasa002Client;
         this.srvBasa003Client = srvBasa003Client;
         this.srvBasa010Service = srvBasa010Service;
     }
 
     @PostMapping("/remittanceAlgorithm")
-    public ResponseEntity<String>ConsulaRenesadora(@RequestBody String remesa) {
+    public ResponseEntity<String> consulaRenesadora(@RequestBody String remesa) {
         if (remesa == null){
             log.error("Remesa no puede ser null");
             throw new IllegalArgumentException("Remesa no puede ser null");
         }
-        remesa = remesa.replaceAll("\"", "");
+        remesa = remesa.replace("\"", "");
         remesa = remesa.replaceAll("\\s+", "");
-        log.info("Constoller remesa:"+remesa);
-        RemittanceAlgorithmDto respuesta = utilService.ConsultaRemesadora(remesa);
+
+        RemittanceAlgorithmDto respuesta = utilService.consultaRemesadora(remesa);
         if (respuesta.getMessage().equals("true")) {
             return ResponseEntity.ok("Remesa: "+remesa+" Remesadora: "+respuesta.getMrecod());
         } else if (respuesta.getMrecod().equals("000006")) {
@@ -142,7 +140,7 @@ public class TestController {
     }
 
     @GetMapping("/wsdlbp/{idNumber}")
-    public ResponseEntity<?> wsdlBpTest(@PathVariable String idNumber){
+    public ResponseEntity<DTCreaBusinessPartnerResp> wsdlBpTest(@PathVariable String idNumber){
         return ResponseEntity.ok(wsdlBpClient.getResponse(idNumber));
     }
 
@@ -159,7 +157,7 @@ public class TestController {
             log.error("Nombres no puede ser null");
             throw new IllegalArgumentException("Nombres no puede ser null");
         }else {
-            boolean similarity = this.utilService.CompararNombre(nombres,mrecod);
+            boolean similarity = this.utilService.compararNombre(nombres,mrecod);
             if (similarity) {
                 return ResponseEntity.ok("Similarity: " + similarity + " canCharge: " + similarity);
             }else {
@@ -170,12 +168,10 @@ public class TestController {
 
     @PostMapping("parametros")
     public ResponseEntity<List<ParametroRemesadoraEntity>> getParametros() {
-        List<ParametroRemesadoraEntity> list = new ArrayList<ParametroRemesadoraEntity>();
-        list = parametroRemesadoraRepository.findAll();
+        List<ParametroRemesadoraEntity> list = parametroRemesadoraRepository.findAll();
         if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(list);
     }
     @PostMapping("/basa010")
@@ -189,9 +185,7 @@ public class TestController {
 
     @PostMapping("/basa002")
     public ResponseEntity<EjecutarSrvBasa002Response> basa020Test() {
-        String agencia = "101";
         EjecutarSrvBasa002Response ejecutarSrvBasa020Response = srvBasa002Client.getResponse002(1000478287,"1"); //ejecutarSrvBasa020Client
-
         return ResponseEntity.ok(ejecutarSrvBasa020Response);
     }
 
@@ -210,7 +204,7 @@ public class TestController {
      *                                   información de la creación del BP.
      * */
     @PostMapping("/wsdlbp")
-    public ResponseEntity<?> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
+    public ResponseEntity<DTCreaBusinessPartnerResp> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
         return ResponseEntity.ok(wsdlBpClient.getResponseCreateBp(datosBpDto));
     }
 

@@ -25,8 +25,7 @@ public class WsdlBpConfig {
     @Bean
     public WsdlBpClient clientServiceBp(@Qualifier("marshallerBp")Jaxb2Marshaller marshallerBP) {
         WsdlBpClient client = new WsdlBpClient();
-        //client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/XISOAPAdapter/MessageServlet?senderParty=&senderService=BS_STANDARDGLOBAL_DEV_80_HN75ODH&receiverParty=&receiverService=&interface=SI_OS_CreaBusinessPartner&interfaceNamespace=http%3A%2F%2Fbancatlan.hn%2FCRM021%2F1.0%2Fout%2FCreaBusinessPartner");
-        //client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/dir/wsdl?p=ic/6518edb3378632a48ae14890ca9b5a38");
+        client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/dir/wsdl?p=ic/6518edb3378632a48ae14890ca9b5a38");
         client.setMarshaller(marshallerBP);
         client.setUnmarshaller(marshallerBP);
         client.setInterceptors(clientInterceptors());

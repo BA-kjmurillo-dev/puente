@@ -5,9 +5,7 @@ import com.puente.persistence.entity.SeguridadCanalEntity;
 import com.puente.service.dto.ComparacionNombreDto;
 import com.puente.service.dto.RemittanceAlgorithmDto;
 import com.puente.service.dto.ValidacionCanalDto;
-import com.puente.web.controller.ConsultaController;
-import com.soap.wsdl.ServicioSrvBasa002.EjecutarSrvBasa002Response;
-import com.soap.wsdl.ServicioSrvBasa003.EjecutarSrvBasa003Response;
+
 import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import com.soap.wsdl.service03.SDTServicioVentanillaOutItemRemesa;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
@@ -16,7 +14,7 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 import com.soap.wsdl.serviceBP.DTDataBusinessPartnerResp.Common.Person;
 
@@ -38,7 +36,7 @@ public class ConsultaService {
     @Autowired
     private SrvBasa010Client srvBasa010Client;
     public RemittanceAlgorithmDto ConsultaRemesadora(String remesa){
-        return utilService.ConsultaRemesadora(remesa);
+        return utilService.consultaRemesadora(remesa);
     }
 
     public String getPaymentType(
@@ -84,7 +82,7 @@ public class ConsultaService {
 
         DTCreaBusinessPartnerResp bpInfo = data.getBpInfo();
         SDTServicioVentanillaOutItemRemesa itemRemesa = data.getItemRemesa();
-        SeguridadCanalEntity canal = data.getCanal();
+
         ComparacionNombreDto comparacion = new ComparacionNombreDto();
         ComparacionNombreDto.beneficiarioBp bp = new ComparacionNombreDto.beneficiarioBp();
         ComparacionNombreDto.beneficiarioSireon benSireion = new ComparacionNombreDto.beneficiarioSireon();
@@ -110,7 +108,7 @@ public class ConsultaService {
             }
         }
 
-        boolean similarity = this.utilService.CompararNombre(comparacion,itemRemesa.getCodigoRemesadora());
+        boolean similarity = this.utilService.compararNombre(comparacion,itemRemesa.getCodigoRemesadora());
         if (similarity) {
             return "000000";
         }else {
@@ -123,16 +121,12 @@ public class ConsultaService {
             return false;
         }
         EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Client.getResponse010(agencia,sucursal);
-        //EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Service.getInfoAgenciaSucursal(agencia,sucursal);
         if ( ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().isEmpty() &&
                 (ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje() == null)
         ) {
 
             return false;
         }
-        if (!ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00")){
-            return false;
-        }
-        return true;
+        return ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00");
     }
 }

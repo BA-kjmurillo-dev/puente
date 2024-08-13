@@ -179,7 +179,8 @@
 							<goal>wsimport</goal>
 						</goals>
 						<configuration>
-							<wsdlDirectory>${project.basedir}/src/main/resources/wsdl</wsdlDirectory>
+							<wsdlDirectory>${project.basedir}/src/main/resources/wsdlBP</wsdlDirectory>
+
 							<packageName>com.soap.wsdl.serviceBP</packageName>
 							<sourceDestDir>${sourcesDir}</sourceDestDir>
 							<destDir>${classesDir}</destDir>

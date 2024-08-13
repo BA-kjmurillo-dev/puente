@@ -98,7 +98,7 @@ public class ConsultaController {
 
             // Validate Remittance Algorithm async
             CompletableFuture<RemittanceAlgorithmDto> validateRemittanceAlgorithmAsync = CompletableFuture.supplyAsync(() -> {
-                return this.utilService.ConsultaRemesadora(requestData.getIdentificadorRemesa());
+                return this.utilService.consultaRemesadora(requestData.getIdentificadorRemesa());
             });
 
             return CompletableFuture.allOf(
@@ -206,7 +206,6 @@ public class ConsultaController {
                     String codeValidation = this.consultaService.validacionCanalConsulta(dataCompleta,requestData.getCuenta(),requestData.getAgencia(),requestData.getSucursal());
 
                     if (!codeValidation.equals("000000")) {
-                        //this.utilService.getCustomMessageCode("000030");
                         return ResponseEntity.status(400).body(
                                 this.utilService.getCustomMessageCode(codeValidation) // remittance data not found
                         );

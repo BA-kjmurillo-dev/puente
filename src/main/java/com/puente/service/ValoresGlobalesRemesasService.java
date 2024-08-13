@@ -38,7 +38,7 @@ public class ValoresGlobalesRemesasService {
     }
 
     @Cacheable(value = "miCache")
-    public List<ValoresGlobalesRemesasEntity> GetListByItem(String item) {
+    public List<ValoresGlobalesRemesasEntity> getListByItem(String item) {
         return this.remesasRepository.findByItem(item);
     }
 

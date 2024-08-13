@@ -23,11 +23,10 @@ public class SrvBasa003Config {
 
     @Bean
     public SrvBasa003Client clientServiceBasa003(Jaxb2Marshaller marshallerBasa003) {
-        SrvBasa003Client Basa003Client = new SrvBasa003Client();
-        //Basa000Client.setDefaultUri("http://srvbasa.bancatlan.hn:30003/SRVBASA003-1.0/ServicioSrvBasa003Interfaz?wsdl");
-        Basa003Client.setMarshaller(marshallerBasa003);
-        Basa003Client.setUnmarshaller(marshallerBasa003);
-        Basa003Client.setInterceptors(clientInterceptors()); //Imprime en consola el request a enviarse
-        return Basa003Client;
+        SrvBasa003Client basa003Client = new SrvBasa003Client();
+        basa003Client.setMarshaller(marshallerBasa003);
+        basa003Client.setUnmarshaller(marshallerBasa003);
+        basa003Client.setInterceptors(clientInterceptors()); //Imprime en consola el request a enviarse
+        return basa003Client;
     }
 }

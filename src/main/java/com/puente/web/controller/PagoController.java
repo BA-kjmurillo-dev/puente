@@ -138,14 +138,14 @@ public class PagoController {
         );
         beneficiary.setPaisResidencia(bpBeneficiaryInfo.getOriginCountryCode());
         // beneficiary.setDescriptorPaisResidencia(""); // No required
-        beneficiary.setDepartamentoResidencia("true"); // TODO Requerido
+        beneficiary.setDepartamentoResidencia("true"); //
         // beneficiary.setDescriptorDepaResidencia(""); // No required
         // beneficiary.setMunicipioResidencia(""); // No required
         // beneficiary.setDescriptorMuniResidencia(""); // No required
-        beneficiary.setCiudadResidencia("true"); // TODO Requerido
+        beneficiary.setCiudadResidencia("true"); //
         beneficiary.setDireccionResidencia(bpAddressInfo.getAddressUsageName());
         // beneficiary.setTelefonoContacto(""); // No required
-        beneficiary.setCelularContacto("true"); // TODO Requerido
+        beneficiary.setCelularContacto("true"); //
         // beneficiary.setEmailContacto(""); // No required
         // beneficiary.setGenero(""); // No required
         beneficiary.setFechaNacimiento(
@@ -153,11 +153,11 @@ public class PagoController {
         );
         beneficiary.setCodigoNacionalidad(bpBeneficiaryInfo.getNationalityCountryCode());
         // beneficiary.setDescriptorNacionalidad(""); // No required
-        beneficiary.setCodigoEstadoCivil("true"); // TODO Requerido
-        beneficiary.setDescriptorEstadoCivil("true"); // TODO Requerido
-        beneficiary.setCodigoOcupacion("true"); // TODO Requerido
+        beneficiary.setCodigoEstadoCivil("true"); //
+        beneficiary.setDescriptorEstadoCivil("true"); //
+        beneficiary.setCodigoOcupacion("true"); //
         // beneficiary.setDescriptorOcupacion(""); // No required
-        beneficiary.setCodigoRelacionRemitente("true"); // TODO Requerido
+        beneficiary.setCodigoRelacionRemitente("true"); //
         // beneficiary.setDescriptorRelacionRemitente(""); // No required
 
         itemRemesa.setBeneficiario(beneficiary);
