@@ -63,5 +63,6 @@ public class MyProperties {
     private String codigoCanal;
     @Value("${CodigoPeticionUnica}")
     private String CodigoPeticionUnica;
-
+    @Value("${jwtPassword}")
+    private String jwtPassword;
 }

@@ -36,17 +36,14 @@ public class Wsdl05Client extends WebServiceGatewaySupport {
         listadoremesadorescanal.setServicesrequest005(request005);
 
         String url = myProperties.getAwssireon005();
-        log.info(url);
-        System.out.println(request005);
+
         SoapActionCallback callback = new SoapActionCallback(url);
 
         //Response
-        WSSIREON005LISTADOREMESADORESCANALResponse response = (WSSIREON005LISTADOREMESADORESCANALResponse) getWebServiceTemplate().marshalSendAndReceive(
+        return (WSSIREON005LISTADOREMESADORESCANALResponse) getWebServiceTemplate().marshalSendAndReceive(
             url,
             listadoremesadorescanal,
             callback
         );
-
-        return response;
     }
 }

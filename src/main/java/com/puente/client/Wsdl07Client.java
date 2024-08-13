@@ -38,14 +38,13 @@ public class Wsdl07Client extends WebServiceGatewaySupport {
 
         String url = myProperties.getAwssireon007();
         log.info(url);
-        System.out.println(request007);
+
         SoapActionCallback callback = new SoapActionCallback(url);
         //Response
-        WSSIREON007CONSULTAPORIDENTIFICADORResponse response = (WSSIREON007CONSULTAPORIDENTIFICADORResponse) getWebServiceTemplate().marshalSendAndReceive(
+        return (WSSIREON007CONSULTAPORIDENTIFICADORResponse) getWebServiceTemplate().marshalSendAndReceive(
             url,
             remittanceByIdentifier,
             callback
         );
-        return response;
     }
 }

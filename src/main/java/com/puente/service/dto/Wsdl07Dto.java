@@ -14,8 +14,8 @@ public class Wsdl07Dto extends ResponseDto {
     @Setter
     @Getter
     public static class Awsdl07Data {
-        private String CodigoRemesadora;
-        private String EstadoRemesa;
-        private String DescriptorEstadoRemesa;
+        private String codigoRemesadora;
+        private String estadoRemesa;
+        private String descriptorEstadoRemesa;
     }
 }

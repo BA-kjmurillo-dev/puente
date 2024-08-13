@@ -32,5 +32,5 @@ public class CreaBpProperties {
     private String actionI;
 
     @Value("${wsBp.SenderBusinessSystemID}")
-    private String SenderBusinessSystemID;
+    private String senderBusinessSystemID;
 }
