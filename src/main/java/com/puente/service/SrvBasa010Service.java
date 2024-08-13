@@ -3,7 +3,7 @@ package com.puente.service;
 import com.puente.client.SrvBasa010Client;
 import com.soap.wsdl.ServicioSrvBasa010.EjecutarSrvBasa010Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 
 @Service

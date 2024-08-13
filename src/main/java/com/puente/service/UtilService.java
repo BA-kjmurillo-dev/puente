@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -44,6 +45,13 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UtilService {
+    private static final String VAR_ERROR = "Error";
+    private static final String VAR_BUS_MSG = "000006";
+    private static final String VAR_BUS_BTS = "000016";
+
+    private static final String VAR_FALSE1 = "false";
+    private static final String VAR_FALSE2 = "false";
+    private static final String VAR_FALSE3 = "false";
     @Autowired
     private static final Logger log = LoggerFactory.getLogger(UtilService.class);
     @Autowired
@@ -82,23 +90,21 @@ public class UtilService {
 
     public Person getBpBeneficiaryInfo(DTCreaBusinessPartnerResp bpInfo) {
         DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
-        Person beneficiary = Optional.of(businessPartnerResp)
+        return Optional.of(businessPartnerResp)
             .map(DTDataBusinessPartnerResp::getCommon)
             .map(Common::getPerson)
             .orElse(null);
-        return beneficiary;
     }
 
     public Identification getBpIdentificationInfo(DTCreaBusinessPartnerResp bpInfo) {
         DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
-        Identification idetification = businessPartnerResp.getIdentification().stream().findFirst().orElse(null);
-        return idetification;
+        return businessPartnerResp.getIdentification().stream().findFirst().orElse(null);
     }
 
     public AddressUsage getBpAddressInfo(DTCreaBusinessPartnerResp bpInfo) {
         DTDataBusinessPartnerResp businessPartnerResp = bpInfo.getConsultation().getBusinessPartner();
         AddressInformation addressInformation = businessPartnerResp.getAddressInformation().stream().findFirst().orElse(null);
-        return addressInformation.getAddressUsage().stream().findFirst().orElse(null);
+        return addressInformation != null ? addressInformation.getAddressUsage().stream().findFirst().orElse(null) : null;
     }
 
     public String getFullName(Person beneficiaryInfo) {
@@ -132,13 +138,13 @@ public class UtilService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate localDate = LocalDate.parse(date, formatter);
 
-        GregorianCalendar gregorianCalendar = GregorianCalendar.from(localDate.atStartOfDay(java.time.ZoneId.systemDefault()));
+        GregorianCalendar gregorianCalendar = GregorianCalendar.from(localDate.atStartOfDay(ZoneId.systemDefault()));
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
     }
 
     // Consultar mensaje de de la base de datos si no se le envia el type lo devuelve como Error
     public ResponseGetRemittanceDataDto getCustomMessageCode(String code) {
-        return this.getCustomMessageCode(code, "Error");
+        return this.getCustomMessageCode(code, VAR_ERROR);
     }
 
     // Consultar mensaje de de la base de datos con type personalizado
@@ -152,7 +158,7 @@ public class UtilService {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
         messageCode.setCode(responseWsdl.getCode());
         messageCode.setMessage(responseWsdl.getMessage());
-        return this.getFormattedMessageCode(messageCode, "Error");
+        return this.getFormattedMessageCode(messageCode, VAR_ERROR);
     }
 
     public ResponseGetRemittanceDataDto getFormattedMessageCode(
@@ -188,7 +194,7 @@ public class UtilService {
             } else if(messageCode.getMessage() != null) {
                 log.error(messageCode.getMessage());
             }
-            // TODO: Agregar registro en la tabla de LOG
+            // Agregar registro en la tabla de LOG
         }
     }
 
@@ -196,17 +202,16 @@ public class UtilService {
         ResponseGetRemittanceDataDto responseDto = new ResponseGetRemittanceDataDto();
         responseDto.setCode("Exception");
         responseDto.setMessage(e.getMessage());
-        return this.getFormattedMessageCode(responseDto, "Error");
+        return this.getFormattedMessageCode(responseDto, VAR_ERROR);
     }
 
-    //private static final Logger log = LoggerFactory.getLogger(UtilServices.class);
-    public RemittanceAlgorithmDto ConsultaRemesadora(String remesa) {
+
+    public RemittanceAlgorithmDto consultaRemesadora(String remesa) {
         int cantidad = 0;
         String rem = "";
         RemittanceAlgorithmDto resp = new RemittanceAlgorithmDto();
         ParametroRemesadoraEntity parametro;
-        List<ParametroRemesadoraEntity> parametros = new ArrayList<ParametroRemesadoraEntity>();
-        parametros = parametroRemesadoraService.getAll();
+        List<ParametroRemesadoraEntity> parametros = parametroRemesadoraService.getAll();
         if (remesa == null) {
             throw new IllegalArgumentException("Remesa no puede ser null");
         } else {
@@ -226,24 +231,34 @@ public class UtilService {
                         if (rem.isEmpty()) {
                             parametro = getParametrosMrecod(parametros, myProperties.getNumeroBts());
                             rem = busBTS(cantidad, remesa, parametro);
-
                         }
                     }
                 }
             }
         }
         if (rem.isEmpty()) {
-            resp.setMessage("false");
-            resp.setMrecod("false");
+            resp.setMessage(VAR_FALSE1);
+            resp.setMrecod(VAR_FALSE2);
         }else{
-            resp.setMessage("false");
-            if(!rem.equals("000006")) {
+            resp.setMessage(VAR_FALSE3);
+            if(!rem.equals(VAR_BUS_MSG)) {
                 resp.setMessage("true");
             }
             resp.setMrecod(rem);
             resp.setDatosExtras("true");
         }
 
+        return resp;
+    }
+
+    public RemittanceAlgorithmDto validaRemBusBTS(RemittanceAlgorithmDto resp, String rem){
+        if (rem.isEmpty()) {
+            resp.setMessage(VAR_FALSE1);
+            resp.setMrecod(VAR_FALSE2);
+        }else{
+            resp.setMessage("true");
+            resp.setMrecod(rem);
+        }
         return resp;
     }
 
@@ -264,35 +279,29 @@ public class UtilService {
     }
 
     private String busMg(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
-        int MRELMA = Integer.parseInt(parametro.getLongMax());
-        String MRETDA = parametro.getTipoDato();
-        String MREINI = parametro.getInicio();
-        //int MRELMA = 8;
-        //char MRETDA = 'N';
+        int mrelma = Integer.parseInt(parametro.getLongMax());
+        String mretda = parametro.getTipoDato();
 
-        if (cantidad == MRELMA) {
-            if (MRETDA.equals("N")) {
+        if (cantidad == mrelma) {
+            if (mretda.equals("N")) {
                 if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
-                    return "000006";
+                    return VAR_BUS_MSG;
                 }
             } else {
-                return "000006";
+                return VAR_BUS_MSG;
             }
         }
         return "";
     }
 
     private String busVigo(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
-        int MRELMA = Integer.parseInt(parametro.getLongMax());
-        String MRETDA = parametro.getTipoDato();
-        String MREINI = parametro.getInicio();
-        //int MRELMA = 10;
-        //char MRETDA = 'N';
-        //String MREINI = "9";
+        int mrelma = Integer.parseInt(parametro.getLongMax());
+        String mretda = parametro.getTipoDato();
+        String mreini = parametro.getInicio();
 
-        if (cantidad == MRELMA) {
-            if ((MREINI + "72").equals(argumento.substring(0, 3)) || (MREINI + "73").equals(argumento.substring(0, 3))) {
-                if (MRETDA.equals("N")) {
+
+        if (cantidad == mrelma && ((mreini + "72").equals(argumento.substring(0, 3)) || (mreini + "73").equals(argumento.substring(0, 3)))) {
+                if (mretda.equals("N")) {
                     if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000004";
                     }
@@ -300,21 +309,18 @@ public class UtilService {
                     return "000004";
                 }
             }
-        }
+
         return "";
     }
 
     private String busUni(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
-        int MRELMA = Integer.parseInt(parametro.getLongMax());
-        String MRETDA = parametro.getTipoDato();
-        String MREINI = parametro.getInicio();
-        //int MRELMA = 10;
-        //char MRETDA = 'N';
-        //String MREINI = "5";
+        int mrelma = Integer.parseInt(parametro.getLongMax());
+        String mretda = parametro.getTipoDato();
+        String mreini = parametro.getInicio();
 
-        if (cantidad == MRELMA) {
-            if (MREINI.equals(String.valueOf(argumento.charAt(0)))) {
-                if (MRETDA.equals("N")) {
+
+        if (cantidad == mrelma && mreini.equals(String.valueOf(argumento.charAt(0)))) {
+                if (mretda.equals("N")) {
                     if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000007";
                     }
@@ -322,47 +328,39 @@ public class UtilService {
                     return "000007";
                 }
             }
-        }
+
         return "";
     }
 
     private String busRia(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
-        int MRELMA = Integer.parseInt(parametro.getLongMax());
-        String MRETDA = parametro.getTipoDato();
-        String MREINI = parametro.getInicio();
-        //int MRELMA = 11;
-        //char MRETDA = 'N';
-        //String MREINI = "1";
-        List<ValoresGlobalesRemesasEntity> lista = valoresGlobalesRemesasService.GetListByItem("000018NC");
+        int mrelma = Integer.parseInt(parametro.getLongMax());
+        String mretda = parametro.getTipoDato();
+        String mreini = parametro.getInicio();
+
+        List<ValoresGlobalesRemesasEntity> lista = valoresGlobalesRemesasService.getListByItem("000018NC");
         String numCorrelativo1 = lista.get(0).getValor();
         String numCorrelativo2 = lista.get(1).getValor();
-        //String numCorrelativo1 = "2";
-        //String numCorrelativo2 = "3";
 
-        if (cantidad == MRELMA) {
-            if ((MREINI + numCorrelativo1).equals(argumento.substring(0, 2)) || (MREINI + numCorrelativo2).equals(argumento.substring(0, 2))) {
-                if (MRETDA.equals("N")) {
-                    if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
+
+        if ((cantidad == mrelma) && ((mreini + numCorrelativo1).equals(argumento.substring(0, 2)) || (mreini + numCorrelativo2).equals(argumento.substring(0, 2))) && mretda.equals("N") && validaNumerico(argumento, cantidad, parametro.getLongMin())) {
                         return "000018";
                     }
-                }
-            }
-        }
+
+
         return "";
     }
 
     private String busBTS(int cantidad, String argumento, ParametroRemesadoraEntity parametro) {
-        int MRELMA = Integer.parseInt(parametro.getLongMax());
-        //int MRELMA = 11;
+        int mrelma = Integer.parseInt(parametro.getLongMax());
 
-        if (cantidad == MRELMA) {
-            if (validaNumerico(argumento, cantidad, parametro.getLongMin())) {
-                boolean banBts = PVerBTS(argumento);
+
+        if (cantidad == mrelma && validaNumerico(argumento, cantidad, parametro.getLongMin())) {
+                boolean banBts = pVerBTS(argumento);
                 if (banBts) {
-                    return "000016";
+                    return VAR_BUS_BTS;
                 }
             }
-        }
+
         return "";
     }
 
@@ -379,8 +377,8 @@ public class UtilService {
         return ban;
     }
 
-    public boolean PVerBTS(String remCod) {
-        String mrEcod = "000016";
+    public boolean pVerBTS(String remCod) {
+        String mrEcod = VAR_BUS_BTS;
         if (remCod.length() != 11 && remCod.length() != 10) {
             return false;
         }
@@ -404,7 +402,7 @@ public class UtilService {
             }
         }
 
-        return remCod.length() == 10 || "000016".equals(mrEcod);
+        return remCod.length() == 10 || VAR_BUS_BTS.equals(mrEcod);
     }
 
     //Correcion de nombre
@@ -515,13 +513,13 @@ public class UtilService {
         return (double) scoreMatrix[len1][len2] / maxScore;
     }
 
-    public boolean CompararNombre(ComparacionNombreDto comparacionNombreDto,String mrecod) {
+    public boolean compararNombre(ComparacionNombreDto comparacionNombreDto,String mrecod) {
         ValoresGlobalesRemesasEntity valoresGlobalesRemesas = valoresGlobalesRemesasService.findByCodeAndItem("ComparacionNombres", "algoritmo");
         boolean canCharge = false;
         if (valoresGlobalesRemesas.getValor().equals("1")) {
             canCharge = calcularSimilaridad(comparacionNombreDto,mrecod);
         } else if (valoresGlobalesRemesas.getValor().equals("2")) {
-            canCharge = CompararNombreSiremu(comparacionNombreDto,mrecod);
+            canCharge = compararNombreSiremu(comparacionNombreDto,mrecod);
         }else {
             canCharge = true;
         }
@@ -536,16 +534,16 @@ public class UtilService {
         boolean canCharge = false;
         double similitudTotal = 0;
 
-        double similitudBp1 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
+        double similitudBp1 = levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
         double similutudS1 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerNombreSireon());
 
-        double similitudBp2 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon());
+        double similitudBp2 = levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon());
         double similutudS2 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getSegundoNombreBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoNombreSireon());
 
-        double similitudBp3 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon());
+        double similitudBp3 = levenshtein(comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon());
         double similutudS3 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getPrimerApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getPrimerApellidoSireon());
 
-        double similitudBp4 = Levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
+        double similitudBp4 = levenshtein(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
         double similutudS4 = jaroWinklerSimilarity(comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp(), comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon());
 
 
@@ -567,7 +565,7 @@ public class UtilService {
         int resultaComparaciones = Math.min(partes1.length, partse2.length);
 
         for (int i = 0; i < resultaComparaciones; i++) {
-            total += Levenshtein(partes1[i], partse2[i]);
+            total += levenshtein(partes1[i], partse2[i]);
         }
 
         return total / resultaComparaciones;
@@ -597,7 +595,7 @@ public class UtilService {
     }
 
     //Levenshtein
-    public static double Levenshtein(String s1, String s2) {
+    public static double levenshtein(String s1, String s2) {
 
         if ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) return 1.0;
         if ((s1 == null || s1.isEmpty()) || (s2 == null || s2.isEmpty())) return 0.0;
@@ -605,12 +603,10 @@ public class UtilService {
 
         s1 = normalize(s1);
         s2 = normalize(s2);
-        double resp =(1.0 - ((double) computeLevenshteinDistance(s1, s2) / maxLen));
-        return resp;
-
+        return (1.0 - ((double) computeLevenshteinDistance(s1, s2) / maxLen));
     }
 
-    public boolean CompararNombreSiremu(ComparacionNombreDto comparacionNombreDto, String mrecod) {
+    public boolean compararNombreSiremu(ComparacionNombreDto comparacionNombreDto, String mrecod) {
 
         //Normalizar los nomrebres
         String pnBp = (comparacionNombreDto.getBeneficiarioBp().getPrimerNombreBp()).trim();
@@ -622,22 +618,22 @@ public class UtilService {
         String saBp = (comparacionNombreDto.getBeneficiarioBp().getSegundoApellidoBp()).trim();
         String saS = (comparacionNombreDto.getBeneficiarioSireon().getSegundoApellidoSireon()).trim();
 
-        ComparacionNombreDto NombreNormalizado = new ComparacionNombreDto();
-        ComparacionNombreDto.beneficiarioBp BeneficiarioBp = new ComparacionNombreDto.beneficiarioBp();
-        ComparacionNombreDto.beneficiarioSireon BeneficiarioSireon = new ComparacionNombreDto.beneficiarioSireon();
+        ComparacionNombreDto nombreNormalizado = new ComparacionNombreDto();
+        ComparacionNombreDto.beneficiarioBp beneficiarioBp = new ComparacionNombreDto.beneficiarioBp();
+        ComparacionNombreDto.beneficiarioSireon beneficiarioSireon = new ComparacionNombreDto.beneficiarioSireon();
 
-        BeneficiarioBp.setPrimerNombreBp(pnBp);
-        BeneficiarioBp.setSegundoNombreBp(snBp);
-        BeneficiarioBp.setPrimerApellidoBp(paBp);
-        BeneficiarioBp.setSegundoApellidoBp(saBp);
+        beneficiarioBp.setPrimerNombreBp(pnBp);
+        beneficiarioBp.setSegundoNombreBp(snBp);
+        beneficiarioBp.setPrimerApellidoBp(paBp);
+        beneficiarioBp.setSegundoApellidoBp(saBp);
 
-        BeneficiarioSireon.setPrimerNombreSireon(pnS);
-        BeneficiarioSireon.setSegundoNombreSireon(snS);
-        BeneficiarioSireon.setPrimerApellidoSireon(paS);
-        BeneficiarioSireon.setSegundoApellidoSireon(saS);
+        beneficiarioSireon.setPrimerNombreSireon(pnS);
+        beneficiarioSireon.setSegundoNombreSireon(snS);
+        beneficiarioSireon.setPrimerApellidoSireon(paS);
+        beneficiarioSireon.setSegundoApellidoSireon(saS);
 
-        NombreNormalizado.setBeneficiarioBp(BeneficiarioBp);
-        NombreNormalizado.setBeneficiarioSireon(BeneficiarioSireon);
+        nombreNormalizado.setBeneficiarioBp(beneficiarioBp);
+        nombreNormalizado.setBeneficiarioSireon(beneficiarioSireon);
 
         String nombreBen = (pnBp + " " + snBp + " " + paBp + " " + saBp).trim();
         String nombreBeneficiario = (pnS + " " + snS + " " + paS + " " + saS).trim();
@@ -645,9 +641,9 @@ public class UtilService {
         Double umbral = Double.parseDouble(valoresGlobalesRemesas2.getValor());
         if (!nombreBen.equals(nombreBeneficiario)) {
             if (!nombreBen.trim().isEmpty() && !nombreBeneficiario.trim().isEmpty()) {
-                boolean valNom = ValidaNombreBp(BeneficiarioBp, BeneficiarioSireon,umbral);
+                boolean valNom = validaNombreBp(beneficiarioBp, beneficiarioSireon,umbral);
                 if (!valNom) {
-                    valNom = ValidaNombreSireon(BeneficiarioSireon, BeneficiarioBp,umbral);
+                    valNom = validaNombreSireon(beneficiarioSireon, beneficiarioBp,umbral);
                     return valNom;
                 } else {
                     return true;
@@ -660,7 +656,7 @@ public class UtilService {
         return true;
     }
 
-    private static boolean ValidaNombreBp(ComparacionNombreDto.beneficiarioBp beneficiarioBp, ComparacionNombreDto.beneficiarioSireon beneficiarioSireon,Double umbral) {
+    private static boolean validaNombreBp(ComparacionNombreDto.beneficiarioBp beneficiarioBp, ComparacionNombreDto.beneficiarioSireon beneficiarioSireon,Double umbral) {
         int porcentaje = 0;
         String[] nombresBp = {beneficiarioBp.getPrimerNombreBp(), beneficiarioBp.getSegundoNombreBp(), beneficiarioBp.getPrimerApellidoBp(), beneficiarioBp.getSegundoApellidoBp()};
         String[] nombreSireon = {beneficiarioSireon.getPrimerNombreSireon(), beneficiarioSireon.getSegundoNombreSireon(), beneficiarioSireon.getPrimerApellidoSireon(),
@@ -672,7 +668,7 @@ public class UtilService {
         return porcentaje >= umbral;
     }
 
-    private static boolean ValidaNombreSireon(ComparacionNombreDto.beneficiarioSireon beneficiarioSireon, ComparacionNombreDto.beneficiarioBp beneficiarioBp,Double umbral) {
+    private static boolean validaNombreSireon(ComparacionNombreDto.beneficiarioSireon beneficiarioSireon, ComparacionNombreDto.beneficiarioBp beneficiarioBp,Double umbral) {
         int porcentaje = 0;
         String[] nombresBp = {beneficiarioBp.getPrimerNombreBp(), beneficiarioBp.getSegundoNombreBp(), beneficiarioBp.getPrimerApellidoBp(), beneficiarioBp.getSegundoApellidoBp()};
         String[] nombresSireon = {beneficiarioSireon.getPrimerNombreSireon(), beneficiarioSireon.getSegundoNombreSireon(), beneficiarioSireon.getPrimerApellidoSireon(),
@@ -706,9 +702,6 @@ public class UtilService {
         ) {
             return false;
         }
-        if (!ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00")){
-            return false;
-        }
-        return true;
+        return ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00");
     }
 }

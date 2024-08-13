@@ -1,7 +1,6 @@
 package com.puente.service;
 
 import com.puente.client.WsdlBpClient;
-import com.puente.web.controller.ConsultaController;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

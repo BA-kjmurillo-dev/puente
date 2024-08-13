@@ -2,7 +2,6 @@ package com.puente.web.config;
 
 
 import com.puente.client.SrvBasa010Client;
-import com.puente.client.Wsdl03Client;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -24,11 +23,10 @@ public class SrvBasa010Config {
 
     @Bean
     public SrvBasa010Client clientServiceBasa010(Jaxb2Marshaller marshallerBasa010) {
-        SrvBasa010Client Basa010Client = new SrvBasa010Client();
-        //Basa010Client.setDefaultUri("http://10.128.254.75:30010/SRVBASA010-1.0/ServicioSrvBasa010Interfaz?wsdl");
-        Basa010Client.setMarshaller(marshallerBasa010);
-        Basa010Client.setUnmarshaller(marshallerBasa010);
-        Basa010Client.setInterceptors(clientInterceptors()); //Imprime en consola el request a enviarse
-        return Basa010Client;
+        SrvBasa010Client basa010Client = new SrvBasa010Client();
+        basa010Client.setMarshaller(marshallerBasa010);
+        basa010Client.setUnmarshaller(marshallerBasa010);
+        basa010Client.setInterceptors(clientInterceptors()); //Imprime en consola el request a enviarse
+        return basa010Client;
     }
 }

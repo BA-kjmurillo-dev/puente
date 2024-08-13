@@ -3,6 +3,7 @@ package com.puente.web.controller;
 import com.puente.client.WsdlBpClient;
 import com.puente.service.dto.DatosBpDto;
 import com.puente.service.dto.ErrorDto;
+import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -65,7 +66,7 @@ public class CreacionBpController {
 
     })
     @PostMapping("/add")
-    public ResponseEntity<?> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
+    public ResponseEntity<DTCreaBusinessPartnerResp> wsdlBpTestCreacion(@RequestBody DatosBpDto datosBpDto){
         return ResponseEntity.ok(wsdlBpClient.getResponseCreateBp(datosBpDto));
     }
 }

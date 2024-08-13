@@ -683,13 +683,6 @@ public class WsdlBpClient extends WebServiceGatewaySupport {
         //Check_lists
         DTCheckListsReq dtCheckListsReq = new DTCheckListsReq();
         dtCheckListsReq.setIdType(getTipoIdentidicacion(datosBpDto.getTipoIdentificador()));
-        System.out.println("Tipo Identificador: " + datosBpDto.getTipoIdentificador() + " -> " + getTipoIdentidicacion(datosBpDto.getTipoIdentificador()));
-        System.out.println("Identificador: " + datosBpDto.getIdentificador());
-        System.out.println("Pimer nombre: " + datosBpDto.getPrimerNombre());
-        System.out.println("Segundo nombre: " + datosBpDto.getSegundoNombre());
-        System.out.println("Primer apellido: " + datosBpDto.getPrimerApellido());
-        System.out.println("Segundo apellido: " + datosBpDto.getSegundoApellido());
-        System.out.println("Genero: " + datosBpDto.getGenero() + " -> " + getTipoGenero(datosBpDto));
         dtCheckListsReq.setIdNumber(datosBpDto.getIdentificador()); // Ejemplo -> "0122334455699"
         dtCheckListsReq.setIdNatio("HN");
 
