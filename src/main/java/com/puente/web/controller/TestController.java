@@ -86,7 +86,7 @@ public class TestController {
         if (respuesta.getMessage().equals("true")) {
             return ResponseEntity.ok("Remesa: "+remesa+" Remesadora: "+respuesta.getMrecod());
         } else if (respuesta.getMrecod().equals("000006")) {
-            return ResponseEntity.ok("Remesa: "+remesa + " Redireccion a SIREMU");
+            return ResponseEntity.status(400).body("Remesa: "+remesa + " Redireccion a SIREMU");
         } else {
             return ResponseEntity.status(400).body("Error: "+remesa);
         }
