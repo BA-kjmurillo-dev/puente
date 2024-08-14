@@ -12,7 +12,7 @@ import lombok.Setter;
 public class RemittanceAlgorithmDto {
 
     private String message;
-    private String Mrecod;
-    private String DatosExtras;
+    private String mrecod;
+    private String datosExtras;
 
 }

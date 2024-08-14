@@ -20,6 +20,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CacheConfig cacheConfig;
     private final UserDetailsService userDetailsService;
+    private MyProperties myProperties;
 
     public JwtFilter(JwtUtil jwtUtil, CacheConfig cacheConfig, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -51,7 +52,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        System.out.println(authenticationToken);
         filterChain.doFilter(request, response);
     }
 }

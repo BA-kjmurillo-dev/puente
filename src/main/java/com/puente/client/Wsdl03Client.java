@@ -112,23 +112,23 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
 
     public WSSIREON003SERVICIOVENTANILLAResponse servicesrequest003(
         ServicesCredentials credentials,
-        SDTServicioVentanillaIn SDTServicioVentanillaIn
+        SDTServicioVentanillaIn sDTServicioVentanillaIn
     ) {
         ServicesRequest003 servicesrequest003 = new ServicesRequest003();
         servicesrequest003.setServicesCredentials(credentials);
-        servicesrequest003.setVentanilla(SDTServicioVentanillaIn);
+        servicesrequest003.setVentanilla(sDTServicioVentanillaIn);
 
-        WSSIREON003SERVICIOVENTANILLA WSSIREON003 = new WSSIREON003SERVICIOVENTANILLA();
-        WSSIREON003.setServicesrequest003(servicesrequest003);
+        WSSIREON003SERVICIOVENTANILLA wssireon003 = new WSSIREON003SERVICIOVENTANILLA();
+        wssireon003.setServicesrequest003(servicesrequest003);
 
         String url = myProperties.getAwssireon003();
         log.info(url);
-        System.out.println(servicesrequest003);
+
         SoapActionCallback callback = new SoapActionCallback(url);
         //Response
         return (WSSIREON003SERVICIOVENTANILLAResponse) getWebServiceTemplate().marshalSendAndReceive(
             url,
-            WSSIREON003,
+                wssireon003,
             callback
         );
     }

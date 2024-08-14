@@ -21,11 +21,10 @@ public class SoapBpInterceptor implements ClientInterceptor {
     public boolean handleRequest(MessageContext messageContext) throws WebServiceClientException {
         SaajSoapMessage soapMessage = (SaajSoapMessage) messageContext.getRequest();
         try (StringWriter writer = new StringWriter()) {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = createSecureTransformer();
             transformer.transform(soapMessage.getPayloadSource(), new StreamResult(writer));
-            System.out.println("SOAP Request: " + writer.toString());
         } catch (IOException | TransformerException e) {
-            throw new RuntimeException(e);
+            throw new SoapBpInterceptorException("Error processing SOAP response", e);
         }
         return true;
     }
@@ -38,11 +37,10 @@ public class SoapBpInterceptor implements ClientInterceptor {
     public boolean handleResponse(MessageContext messageContext) throws WebServiceClientException {
         SaajSoapMessage soapMessage = (SaajSoapMessage) messageContext.getResponse();
         try (StringWriter writer = new StringWriter()) {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = createSecureTransformer();
             transformer.transform(soapMessage.getPayloadSource(), new StreamResult(writer));
-            System.out.println("SOAP Response: " + writer.toString());
         } catch (IOException | TransformerException e) {
-            throw new RuntimeException(e);
+            throw new SoapBpInterceptorException("Error processing SOAP response", e);
         }
         return true;
     }
@@ -52,8 +50,22 @@ public class SoapBpInterceptor implements ClientInterceptor {
         return false;
     }
 
+    // Implementar o eliminar si no es necesario
     @Override
     public void afterCompletion(MessageContext messageContext, Exception e) throws WebServiceClientException {
+    // Implementar o eliminar si no es necesario
+    }
 
+    public static class SoapBpInterceptorException extends RuntimeException {
+        public SoapBpInterceptorException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    private Transformer createSecureTransformer() throws TransformerException {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+        return factory.newTransformer();
     }
 }
