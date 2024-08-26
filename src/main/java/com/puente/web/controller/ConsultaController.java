@@ -8,6 +8,12 @@ import com.soap.wsdl.service03.SDTServicioVentanillaIn;
 import com.soap.wsdl.service03.SDTServicioVentanillaInItemRemesa;
 import com.soap.wsdl.service07.ServicesRequest007ItemSolicitud;
 import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.ToString;
 import org.slf4j.Logger;
@@ -21,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.List;
 
 
+@Tag(name = "Consulta", description = "Este controlador permite consultar la información del Business Partner y los " +
+                                      "servicio de SIREON.")
 @ToString
 @RestController
 @RequestMapping("/consulta")
@@ -59,6 +67,34 @@ public class ConsultaController {
         this.wsdlBpService = wsdlBpService;
     }
 
+    /**
+     * @description Método que se usa para consultar el Business Partner, los servicios de SIREON, el servicio Basa10 y
+     *              valida el estado de la remesa para devolver la información del usuario y remesa.
+     * @param requestData Recibe un objeto de tipo RequestGetRemittanceDataDto
+     * @return ResponseGetRemittanceDataDto Retorna un objeto de tipo ResponseGetRemittanceDataDto.
+     * */
+    @Operation(summary = "Consulta" , description = "Método que permite consultar la información del Business Partner y " +
+            "lo servicio de SIREON.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "08", description = "Canal no esta parametrizado."),
+            @ApiResponse(responseCode = "WSDL04", description = "Error en el servicio wsdl04."),
+            @ApiResponse(responseCode = "WSDL05", description = "Error en el servicio wsdl05."),
+            @ApiResponse(responseCode = "ERROR03", description = "Estado de la remesa no valido."),
+            @ApiResponse(responseCode = "SIREMU3", description = "Remesa no disponible."),
+            @ApiResponse(responseCode = "11", description = "Error, se debe Crear BP."),
+            @ApiResponse(responseCode = "12", description = "Error al obtener la información del cliente."),
+            @ApiResponse(responseCode = "09", description = "Esta remesadora no puede pagar por este canal."),
+            @ApiResponse(responseCode = "WSDL03", description = "Error en el servicio wsdl03."),
+            @ApiResponse(responseCode = "07", description = "Remesa solicitada no se encuentra en el repositorio de datos.")
+    })
+    @Parameters({
+            @Parameter(name = "canal", description = "Canal", example = "0003"),
+            @Parameter(name = "identificadorRemesa", description = "Identificador de la remesa", example = "202405230001"),
+            @Parameter(name = "identificacion", description = "Identificación", example = "1207199500016"),
+            @Parameter(name = "agencia", description = "Agencia", example = "101"),
+            @Parameter(name = "sucursal", description = "Sucursal", example = "0001"),
+            @Parameter(name = "cuenta", description = "Cuenta", example = "1200218152")
+    })
     @PostMapping()
     public ResponseEntity<ResponseGetRemittanceDataDto> validateRemittance(
         @Valid @RequestBody RequestGetRemittanceDataDto requestData
