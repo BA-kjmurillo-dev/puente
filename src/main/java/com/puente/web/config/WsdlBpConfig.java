@@ -25,7 +25,7 @@ public class WsdlBpConfig {
     @Bean
     public WsdlBpClient clientServiceBp(@Qualifier("marshallerBp")Jaxb2Marshaller marshallerBP) {
         WsdlBpClient client = new WsdlBpClient();
-        client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/dir/wsdl?p=ic/6518edb3378632a48ae14890ca9b5a38");
+        //client.setDefaultUri("http://hndespombapp.adbancat.hn:50000/dir/wsdl?p=ic/6518edb3378632a48ae14890ca9b5a38");
         client.setMarshaller(marshallerBP);
         client.setUnmarshaller(marshallerBP);
         client.setInterceptors(clientInterceptors());
