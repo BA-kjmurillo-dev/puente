@@ -7,6 +7,7 @@ import com.puente.persistence.entity.ValoresGlobalesRemesasEntity;
 import com.puente.service.dto.RemittanceAlgorithmDto;
 import com.puente.service.dto.ResponseDto;
 import com.puente.service.dto.ComparacionNombreDto;
+import com.puente.service.dto.CredencialesDto;
 import com.puente.web.config.MyProperties;
 import com.puente.service.dto.ResponseGetRemittanceDataDto;
 import com.soap.wsdl.ServicioSrvBasa003.EjecutarSrvBasa003Response;
@@ -135,11 +136,15 @@ public class UtilService {
     }
 
     public XMLGregorianCalendar getXmlFormattedDate(String date) throws DatatypeConfigurationException {
+        try {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate localDate = LocalDate.parse(date, formatter);
 
         GregorianCalendar gregorianCalendar = GregorianCalendar.from(localDate.atStartOfDay(ZoneId.systemDefault()));
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // Consultar mensaje de de la base de datos si no se le envia el type lo devuelve como Error
@@ -158,6 +163,14 @@ public class UtilService {
         ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
         messageCode.setCode(responseWsdl.getCode());
         messageCode.setMessage(responseWsdl.getMessage());
+        return this.getFormattedMessageCode(messageCode, VAR_ERROR);
+    }
+
+    public ResponseGetRemittanceDataDto getWsdlMessageCode(ResponseDto responseWsdl, String type) {
+        ResponseGetRemittanceDataDto messageCode = new ResponseGetRemittanceDataDto();
+        messageCode.setCode(responseWsdl.getCode());
+        messageCode.setMessage(responseWsdl.getMessage());
+        messageCode.setType(type);
         return this.getFormattedMessageCode(messageCode, VAR_ERROR);
     }
 
@@ -703,5 +716,35 @@ public class UtilService {
             return false;
         }
         return ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje().equals("00");
+    }
+
+    public CredencialesDto getCredenciales(String codCanal) {
+        CredencialesDto credencialesDto = new CredencialesDto();
+        credencialesDto.setToken("");
+        switch (codCanal) {
+            case "0002":
+                credencialesDto.setUser(myProperties.getServicesUserJteller());
+                credencialesDto.setPassword(myProperties.getServicesPasswordJteller());
+                break;
+            case "0003":
+                credencialesDto.setUser(myProperties.getServicesUserOcb());
+                credencialesDto.setPassword(myProperties.getServicesPasswordOcb());
+                break;
+            case "0004":
+                credencialesDto.setUser(myProperties.getServicesUserAbas());
+                credencialesDto.setPassword(myProperties.getServicesPasswordAbas());
+                break;
+            case "0005":
+                credencialesDto.setUser(myProperties.getServicesUserAbi());
+                credencialesDto.setPassword(myProperties.getServicesPasswordAbi());
+                break;
+            case "0006":
+                credencialesDto.setUser(myProperties.getServicesUserDilo());
+                credencialesDto.setPassword(myProperties.getServicesPasswordDilo());
+                break;
+            default:
+                break;
+        }
+        return credencialesDto;
     }
 }

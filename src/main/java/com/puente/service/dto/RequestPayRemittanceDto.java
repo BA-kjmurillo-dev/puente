@@ -39,11 +39,13 @@ public class RequestPayRemittanceDto {
     private String motivo;
     @NotNull
     private SDTServicioVentanillaOutItemRemesa remesa;
-    @NotNull
-    @NotEmpty
-    private String agencia;
-    @NotNull
-    @NotEmpty
-    private String sucursal;
-    private String cuenta;
+    //@NotNull
+    //@NotEmpty
+    //private String agencia;
+    //@NotNull
+    //@NotEmpty
+    //private String sucursal;
+    private String cuentaDebito;
+    private String cuentaCredito;
+
 }

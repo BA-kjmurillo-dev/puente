@@ -51,7 +51,7 @@ public class Wsdl07Service extends WebServiceGatewaySupport {
     public Boolean isValidStatus(
         String remittanseStatus
     ) {
-        List<String> validStatuses = List.of("Cargada", "Pendiente", "Reversada","EnProceso");
+        List<String> validStatuses = List.of("Cargada");
         return validStatuses.contains(remittanseStatus);
     }
 }

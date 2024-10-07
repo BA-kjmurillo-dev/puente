@@ -93,13 +93,19 @@ public class TestController {
     @GetMapping("/wsdl03")
     public ResponseEntity<Wsdl03Dto> wsdl03Test() {
         SDTServicioVentanillaInItemRemesa sdtServicioVentanillaInItemRemesa = new SDTServicioVentanillaInItemRemesa();
+        com.soap.wsdl.service03.ServicesCredentials credenciales003 = new com.soap.wsdl.service03.ServicesCredentials();
+        CredencialesDto credencialesCanal = utilService.getCredenciales("0002");
+
         sdtServicioVentanillaInItemRemesa.setIdentificadorRemesa("12020137470");
         sdtServicioVentanillaInItemRemesa.setCodigoBanco("2000");
         sdtServicioVentanillaInItemRemesa.setCodigoRemesadora("000016");
         SDTServicioVentanillaIn request03 = new SDTServicioVentanillaIn();
         request03.setCanal("0002");
         request03.setItemRemesa(sdtServicioVentanillaInItemRemesa);
-        return ResponseEntity.ok(this.wsdl03Service.getRemittanceData(request03));
+        credenciales003.setServicesUser(credencialesCanal.getUser());
+        credenciales003.setServicesPassword(credencialesCanal.getPassword());
+        credenciales003.setServicesToken("");
+        return ResponseEntity.ok(this.wsdl03Service.getRemittanceData(request03,credenciales003));
     }
 
     @GetMapping("/wsdl04")
@@ -177,7 +183,7 @@ public class TestController {
     @PostMapping("/basa010")
     public ResponseEntity<EjecutarSrvBasa010Response> basa010Test() {
 
-        String agencia = "asd";
+        String agencia = "201";
         EjecutarSrvBasa010Response ejecutarSrvBasa010Response = srvBasa010Service.getInfoAgencia(agencia);
         log.info(ejecutarSrvBasa010Response.getRespuestaSrvBasa010().getCodigoMensaje());
         return ResponseEntity.ok(ejecutarSrvBasa010Response);
@@ -208,5 +214,9 @@ public class TestController {
         return ResponseEntity.ok(wsdlBpClient.getResponseCreateBp(datosBpDto));
     }
 
+    @PostMapping("/crendencialesCanal")
+    public ResponseEntity<CredencialesDto> getCredenciales(@RequestBody String data){
+        return ResponseEntity.ok(utilService.getCredenciales(data));
+    }
 
 }

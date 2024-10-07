@@ -15,8 +15,8 @@ public class Wsdl03Service {
         this.wsdl03Client = wsdl03Client;
     }
 
-    public Wsdl03Dto getRemittanceData (SDTServicioVentanillaIn request03) {
-        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.getRemittanceData(request03);
+    public Wsdl03Dto getRemittanceData (SDTServicioVentanillaIn request03, ServicesCredentials credentials) {
+        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.getRemittanceData(request03,credentials);
         ServicesResponse servicesResponse = wsdl03Response.getServicesresponse003().getVentanilla().getServicesResponse();
         SDTServicioVentanillaOutItemRemesa itemRemesa = wsdl03Response.getServicesresponse003().getVentanilla().getItemRemesa();
         Wsdl03Dto response = new Wsdl03Dto();
@@ -26,8 +26,8 @@ public class Wsdl03Service {
         return response;
     }
 
-    public Wsdl03Dto payRemittance (SDTServicioVentanillaIn request03) {
-        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.payRemittance(request03);
+    public Wsdl03Dto payRemittance (SDTServicioVentanillaIn request03, ServicesCredentials credentials) {
+        WSSIREON003SERVICIOVENTANILLAResponse wsdl03Response = this.wsdl03Client.payRemittance(request03,credentials);
         ServicesResponse servicesResponse = wsdl03Response.getServicesresponse003().getVentanilla().getServicesResponse();
         SDTServicioVentanillaOutItemRemesa itemRemesa = wsdl03Response.getServicesresponse003().getVentanilla().getItemRemesa();
         Wsdl03Dto response = new Wsdl03Dto();
