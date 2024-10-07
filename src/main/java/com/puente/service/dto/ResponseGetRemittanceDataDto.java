@@ -2,6 +2,7 @@ package com.puente.service.dto;
 
 import com.soap.wsdl.service03.SDTServicioVentanillaOutItemRemesa;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.soap.wsdl.serviceBP.DTCreaBusinessPartnerResp;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,5 @@ public class ResponseGetRemittanceDataDto {
     private SDTServicioVentanillaOutItemRemesa data;
     private Boolean existeBp;
     private String datosExtras;
+    DTCreaBusinessPartnerResp bpInfo;
 }

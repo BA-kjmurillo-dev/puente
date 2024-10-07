@@ -46,15 +46,15 @@ public class ConsultaController {
 
     @Autowired
     public ConsultaController(
-        UtilService utilService,
-        ValoresGlobalesRemesasService valoresGlobalesService,
-        SeguridadCanalService seguridadCanalService,
-        ConsultaService consultaService,
-        Wsdl03Service wsdl03Service,
-        Wsdl04Service wsdl04Service,
-        Wsdl05Service wsdl05Service,
-        Wsdl07Service wsdl07Service,
-        WsdlBpService wsdlBpService
+            UtilService utilService,
+            ValoresGlobalesRemesasService valoresGlobalesService,
+            SeguridadCanalService seguridadCanalService,
+            ConsultaService consultaService,
+            Wsdl03Service wsdl03Service,
+            Wsdl04Service wsdl04Service,
+            Wsdl05Service wsdl05Service,
+            Wsdl07Service wsdl07Service,
+            WsdlBpService wsdlBpService
     ) {
         this.utilService = utilService;
         this.valoresGlobalesService = valoresGlobalesService;
@@ -103,6 +103,34 @@ public class ConsultaController {
             // get channel information
             SeguridadCanalEntity channelInfo = this.seguridadCanalService.findBychannelCode(requestData.getCanal());
             ValoresGlobalesRemesasEntity bank = valoresGlobalesService.findByCodeAndItem( "01", "bank");
+
+            CredencialesDto credencialesCanal = utilService.getCredenciales(requestData.getCanal());
+
+            com.soap.wsdl.service03.ServicesCredentials credenciales003 = new com.soap.wsdl.service03.ServicesCredentials();
+            com.soap.wsdl.service04.ServicesCredentials credenciales004 = new com.soap.wsdl.service04.ServicesCredentials();
+            com.soap.wsdl.service05.ServicesCredentials credenciales005 = new com.soap.wsdl.service05.ServicesCredentials();
+            com.soap.wsdl.service07.ServicesCredentials credenciales007 = new com.soap.wsdl.service07.ServicesCredentials();
+
+            log.info(credencialesCanal.getUser());
+            log.info(credencialesCanal.getPassword());
+            log.info(credencialesCanal.getToken());
+
+            credenciales003.setServicesUser(credencialesCanal.getUser());
+            credenciales003.setServicesPassword(credencialesCanal.getPassword());
+            credenciales003.setServicesToken(credencialesCanal.getToken());
+
+            credenciales004.setServicesUser(credencialesCanal.getUser());
+            credenciales004.setServicesPassword(credencialesCanal.getPassword());
+            credenciales004.setServicesToken(credencialesCanal.getToken());
+
+            credenciales005.setServicesUser(credencialesCanal.getUser());
+            credenciales005.setServicesPassword(credencialesCanal.getPassword());
+            credenciales005.setServicesToken(credencialesCanal.getToken());
+
+            credenciales007.setServicesUser(credencialesCanal.getUser());
+            credenciales007.setServicesPassword(credencialesCanal.getPassword());
+            credenciales007.setServicesToken(credencialesCanal.getToken());
+
 
             if(channelInfo == null) {
                 return ResponseEntity.status(400).body(
@@ -217,7 +245,7 @@ public class ConsultaController {
                     SDTServicioVentanillaIn request03 = this.getRequest03(
                         requestData, bank, remitterCode, channelInfo
                     );
-                    Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03);
+                    Wsdl03Dto wsdl03Response = this.wsdl03Service.getRemittanceData(request03,credenciales003);
                     if(!this.utilService.isResponseSuccess(wsdl03Response)) {
                         // error Wsdl03
                         this.utilService.getCustomTechnicalMessage("ERRORWSDL03");
@@ -247,12 +275,13 @@ public class ConsultaController {
                         );
                     }
 
+                    // DTCreaBusinessPartnerResp bpInfo
                     ResponseGetRemittanceDataDto responseGetRemittanceDataDto = new ResponseGetRemittanceDataDto();
                     responseGetRemittanceDataDto.setMessage(wsdl03Response.getMessage());
                     responseGetRemittanceDataDto.setCode(wsdl03Response.getCode());
                     responseGetRemittanceDataDto.setData(wsdl03Response.getData());
                     responseGetRemittanceDataDto.setDatosExtras(datosExtras);
-                    if(isJteller) { responseGetRemittanceDataDto.setExisteBp(existBp); }
+                    if(isJteller) { responseGetRemittanceDataDto.setExisteBp(existBp); responseGetRemittanceDataDto.setBpInfo(bpInfo); }
                     return ResponseEntity.ok(responseGetRemittanceDataDto);
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Error while processing async requests", e);

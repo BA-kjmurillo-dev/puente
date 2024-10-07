@@ -14,13 +14,9 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
     private static final Logger log = LoggerFactory.getLogger(Wsdl03Client.class);
 
     public WSSIREON003SERVICIOVENTANILLAResponse getRemittanceData(
-        SDTServicioVentanillaIn request03
+        SDTServicioVentanillaIn request03,
+        ServicesCredentials credentials
     ) {
-        //Credentials
-        ServicesCredentials credentials = new ServicesCredentials();
-        credentials.setServicesUser(myProperties.getServicesUser());
-        credentials.setServicesPassword(myProperties.getServicesPassword());
-        credentials.setServicesToken("");
 
         //Ventanilla In
         SDTServicioVentanillaIn ventanillaIn = new SDTServicioVentanillaIn();
@@ -40,13 +36,9 @@ public class Wsdl03Client extends WebServiceGatewaySupport {
     }
 
     public WSSIREON003SERVICIOVENTANILLAResponse payRemittance(
-        SDTServicioVentanillaIn request03
+        SDTServicioVentanillaIn request03,
+        ServicesCredentials credentials
     ) {
-        //Credentials
-        ServicesCredentials credentials = new ServicesCredentials();
-        credentials.setServicesUser(myProperties.getServicesUser());
-        credentials.setServicesPassword(myProperties.getServicesPassword());
-        credentials.setServicesToken("");
 
         //Ventanilla In
         SDTServicioVentanillaIn ventanillaIn = new SDTServicioVentanillaIn();

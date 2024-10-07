@@ -65,4 +65,24 @@ public class MyProperties {
     private String CodigoPeticionUnica;
     @Value("${jwtPassword}")
     private String jwtPassword;
+    @Value("${ServicesUserJteller}")
+    private String ServicesUserJteller;
+    @Value("${ServicesPasswordJteller}")
+    private String ServicesPasswordJteller;
+    @Value("${ServicesUserOcb}")
+    private String ServicesUserOcb;
+    @Value("${ServicesPasswordOcb}")
+    private String ServicesPasswordOcb;
+    @Value("${ServicesUserAbas}")
+    private String ServicesUserAbas;
+    @Value("${ServicesPasswordAbas}")
+    private String ServicesPasswordAbas;
+    @Value("${ServicesUserDilo}")
+    private String ServicesUserDilo;
+    @Value("${ServicesPasswordDilo}")
+    private String ServicesPasswordDilo;
+    @Value("${ServicesUserAbi}")
+    private String ServicesUserAbi;
+    @Value("${ServicesPasswordAbi}")
+    private String ServicesPasswordAbi;
 }
